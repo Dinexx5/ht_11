@@ -9,16 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.blogsRepository = void 0;
+exports.BlogsRepository = void 0;
 const db_1 = require("../db");
-exports.blogsRepository = {
+class BlogsRepository {
     createBlog(newDbBlog) {
         return __awaiter(this, void 0, void 0, function* () {
             const blogInstance = new db_1.BlogModelClass(newDbBlog);
             yield blogInstance.save();
             return newDbBlog;
         });
-    },
+    }
     deleteBlogById(_id) {
         return __awaiter(this, void 0, void 0, function* () {
             const blogInstance = yield db_1.BlogModelClass.findOne({ _id: _id });
@@ -28,7 +28,7 @@ exports.blogsRepository = {
             yield blogInstance.deleteOne();
             return true;
         });
-    },
+    }
     UpdateBlogById(_id, body) {
         return __awaiter(this, void 0, void 0, function* () {
             const { name, description, websiteUrl } = body;
@@ -43,4 +43,5 @@ exports.blogsRepository = {
             return true;
         });
     }
-};
+}
+exports.BlogsRepository = BlogsRepository;

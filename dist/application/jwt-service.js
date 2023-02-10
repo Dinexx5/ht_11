@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.jwtService = void 0;
+const models_1 = require("../models/models");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const mongodb_1 = require("mongodb");
 const settings_1 = require("../settings");
@@ -42,14 +43,7 @@ exports.jwtService = {
                 expiredAt: expiredAt
             };
             yield jwt_repository_1.jwtRepository.saveRefreshTokenMeta(tokenMeta);
-            const newDevice = {
-                _id: new mongodb_1.ObjectId(),
-                userId: user._id,
-                ip: ip,
-                title: deviceName,
-                lastActiveDate: issuedAt,
-                deviceId: deviceId
-            };
+            const newDevice = new models_1.DeviceDbModel(new mongodb_1.ObjectId(), user._id, ip, deviceName, issuedAt, deviceId);
             yield devices_repository_1.devicesRepository.saveNewDevice(newDevice);
             return refreshToken;
         });

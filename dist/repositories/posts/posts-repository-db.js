@@ -9,29 +9,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postsRepository = void 0;
+exports.PostsRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
-exports.postsRepository = {
+class PostsRepository {
     createPost(newDbPost) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield db_1.PostModel.create(newDbPost);
+            yield db_1.PostModelClass.create(newDbPost);
             return newDbPost;
         });
-    },
+    }
     deletePostById(postId) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(postId);
-            let result = yield db_1.PostModel.deleteOne({ _id: _id });
+            let result = yield db_1.PostModelClass.deleteOne({ _id: _id });
             return result.deletedCount === 1;
         });
-    },
+    }
     UpdatePostById(id, body) {
         return __awaiter(this, void 0, void 0, function* () {
             const { title, shortDescription, content, blogId } = body;
             let _id = new mongodb_1.ObjectId(id);
-            let result = yield db_1.PostModel.updateOne({ _id: _id }, { $set: { title: title, shortDescription: shortDescription, content: content, blogId: blogId } });
+            let result = yield db_1.PostModelClass.updateOne({ _id: _id }, { $set: { title: title, shortDescription: shortDescription, content: content, blogId: blogId } });
             return result.matchedCount === 1;
         });
     }
-};
+}
+exports.PostsRepository = PostsRepository;

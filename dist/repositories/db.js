@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runDb = exports.AttemptModelClass = exports.DeviceModel = exports.TokenModel = exports.CommentModel = exports.UserModel = exports.PostModel = exports.BlogModelClass = void 0;
+exports.runDb = exports.AttemptModelClass = exports.DeviceModelClass = exports.TokenModel = exports.CommentModelClass = exports.UserModel = exports.PostModelClass = exports.BlogModelClass = void 0;
 const dotenv = __importStar(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const schemas_1 = require("../models/schemas");
@@ -54,11 +54,11 @@ if (!mongoUri) {
 // export const tokenCollection = db.collection<refreshTokenModel>("tokens")
 // export const devicesCollection = db.collection<deviceDbModel>("devices")
 exports.BlogModelClass = mongoose_1.default.model('blogs', schemas_1.blogSchema);
-exports.PostModel = mongoose_1.default.model('posts', schemas_1.postSchema);
+exports.PostModelClass = mongoose_1.default.model('posts', schemas_1.postSchema);
 exports.UserModel = mongoose_1.default.model('userAccounts', schemas_1.userAccountSchema);
-exports.CommentModel = mongoose_1.default.model('comments', schemas_1.commentSchema);
+exports.CommentModelClass = mongoose_1.default.model('comments', schemas_1.commentSchema);
 exports.TokenModel = mongoose_1.default.model('tokens', schemas_1.tokenSchema);
-exports.DeviceModel = mongoose_1.default.model('devices', schemas_1.deviceSchema);
+exports.DeviceModelClass = mongoose_1.default.model('devices', schemas_1.deviceSchema);
 exports.AttemptModelClass = mongoose_1.default.model('attempts', schemas_1.attemptSchema);
 function runDb() {
     return __awaiter(this, void 0, void 0, function* () {

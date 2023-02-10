@@ -1,13 +1,14 @@
+import {ObjectId} from "mongodb";
 
 export type createBlogInputModel = {
     name: string
     description: string
-    websiteUrl:string
+    websiteUrl: string
 }
 export type updateBlogInputModel = {
     name: string
     description: string
-    websiteUrl:string
+    websiteUrl: string
 }
 
 export type createPostInputModel = {
@@ -48,23 +49,48 @@ export type postViewModel = {
     createdAt: string
 }
 
-export type blogDbModel = {
-    _id: Object
-    name: string
-    description: string
-    websiteUrl: string
-    createdAt: string
+export class BlogDbModel {
+    constructor(
+        public _id: ObjectId,
+        public name: string,
+        public description: string,
+        public websiteUrl: string,
+        public createdAt: string
+    ) {
+    }
 }
 
-export type postDbModel = {
-    _id: Object
-    title: string
-    shortDescription: string
-    content: string
-    blogId: string
-    blogName: string
-    createdAt: string
+export class PostDbModel {
+    constructor(
+        public _id: ObjectId,
+        public title: string,
+        public shortDescription: string,
+        public content: string,
+        public blogId: string,
+        public blogName: string,
+        public createdAt: string
+    ) {
+    }
 }
+
+// // export type blogDbModel = {
+//     _id: Object
+//     name: string
+//     description: string
+//     websiteUrl: string
+//     createdAt: string
+// // }
+
+// export type postDbModel = {
+//     _id: Object
+//     title: string
+//     shortDescription: string
+//     content: string
+//     blogId: string
+//     blogName: string
+//     createdAt: string
+// }
+
 export type paginatedViewModel<T> = {
     pagesCount: number
     page: number
@@ -140,13 +166,17 @@ export type commentViewModel = {
     userLogin: string
     createdAt: string
 }
-export type commentDbModel = {
-    _id: Object
-    content: string
-    createdAt: string
-    userId: string
-    userLogin: string
-    postId: string
+
+export class CommentDbModel {
+    constructor(
+        public _id: ObjectId,
+        public content: string,
+        public createdAt: string,
+        public userId: string,
+        public userLogin: string,
+        public postId: string
+    ) {
+    }
 }
 
 export type paginationQuerys = {
@@ -168,13 +198,16 @@ export type refreshTokenDbModel = {
     expiredAt: string
 }
 
-export type deviceDbModel = {
-    _id: object
-    userId: object
-    ip: string
-    title: string
-    lastActiveDate: string
-    deviceId: string
+
+export class DeviceDbModel {
+    constructor(
+        public _id: ObjectId,
+        public userId: object,
+        public ip: string,
+        public title: string,
+        public lastActiveDate: string,
+        public deviceId: string
+    ) { }
 }
 
 export type deviceViewModel = {

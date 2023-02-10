@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.blogsQueryRepository = void 0;
+exports.blogsQueryRepository = exports.BlogsQueryRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
 function mapFoundBlogToBlogViewModel(blog) {
@@ -21,7 +21,7 @@ function mapFoundBlogToBlogViewModel(blog) {
         id: blog._id.toString()
     };
 }
-exports.blogsQueryRepository = {
+class BlogsQueryRepository {
     getAllBlogs(query) {
         return __awaiter(this, void 0, void 0, function* () {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10, searchNameTerm = null } = query;
@@ -47,7 +47,7 @@ exports.blogsQueryRepository = {
                 items: blogsView
             };
         });
-    },
+    }
     findBlogById(blogId) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(blogId);
@@ -57,5 +57,7 @@ exports.blogsQueryRepository = {
             }
             return mapFoundBlogToBlogViewModel(foundBlog);
         });
-    },
-};
+    }
+}
+exports.BlogsQueryRepository = BlogsQueryRepository;
+exports.blogsQueryRepository = new BlogsQueryRepository();

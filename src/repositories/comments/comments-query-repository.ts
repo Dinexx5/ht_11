@@ -1,11 +1,11 @@
 import {
-    commentDbModel, commentViewModel,
+    CommentDbModel, commentViewModel,
     paginationQuerys, paginatedViewModel
 } from "../../models/models";
-import {CommentModel} from "../db";
+import {CommentModelClass} from "../db";
 import {ObjectId} from "mongodb";
 
-function mapCommentToCommentViewModel (comment: commentDbModel): commentViewModel {
+function mapCommentToCommentViewModel (comment: CommentDbModel): commentViewModel {
     return  {
         id: comment._id.toString(),
         content: comment.content,
@@ -15,17 +15,15 @@ function mapCommentToCommentViewModel (comment: commentDbModel): commentViewMode
     }
 
 }
-
-export const commentsQueryRepository = {
-
+export class CommentsQueryRepository {
     async getAllCommentsForPost(query: paginationQuerys, postId: string): Promise<paginatedViewModel<commentViewModel[]>> {
 
         const {sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10} = query
         const sortDirectionNumber: 1 | -1 = sortDirection === "desc" ? -1 : 1;
         const skippedCommentsNumber = (+pageNumber - 1) * +pageSize
 
-        const countAll = await CommentModel.countDocuments({postId: postId})
-        let commentsDb = await CommentModel
+        const countAll = await CommentModelClass.countDocuments({postId: postId})
+        let commentsDb = await CommentModelClass
             .find({postId: postId})
             .sort({[sortBy]: sortDirectionNumber})
             .skip(skippedCommentsNumber)
@@ -40,17 +38,15 @@ export const commentsQueryRepository = {
             totalCount: countAll,
             items: commentsView
         }
-
-
-    },
+    }
     async findCommentById(commentId: string): Promise<commentViewModel | null> {
 
         let _id = new ObjectId(commentId)
-        let foundComment: commentDbModel | null = await CommentModel.findOne({_id: _id})
+        let foundComment: CommentDbModel | null = await CommentModelClass.findOne({_id: _id})
         if (!foundComment) {
             return null
         }
         return mapCommentToCommentViewModel(foundComment)
     }
 }
-
+export const commentsQueryRepository = new CommentsQueryRepository()

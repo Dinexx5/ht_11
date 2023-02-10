@@ -12,39 +12,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.commentsRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
-exports.commentsRepository = {
-    createComment(content, user, postId) {
+class CommentsRepository {
+    createComment(comment) {
         return __awaiter(this, void 0, void 0, function* () {
-            const commentDb = {
-                _id: new mongodb_1.ObjectId(),
-                content: content,
-                createdAt: new Date().toISOString(),
-                userId: user._id.toString(),
-                userLogin: user.accountData.login,
-                postId: postId
-            };
-            yield db_1.CommentModel.create(commentDb);
-            return {
-                id: commentDb._id.toString(),
-                content: commentDb.content,
-                userId: commentDb.userId,
-                userLogin: commentDb.userLogin,
-                createdAt: commentDb.createdAt
-            };
+            yield db_1.CommentModelClass.create(comment);
+            return comment;
         });
-    },
+    }
     updateComment(id, content) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(id);
-            let result = yield db_1.CommentModel.updateOne({ _id: _id }, { $set: { content: content } });
+            let result = yield db_1.CommentModelClass.updateOne({ _id: _id }, { $set: { content: content } });
             return result.matchedCount === 1;
         });
-    },
+    }
     deleteComment(id) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(id);
-            let result = yield db_1.CommentModel.deleteOne({ _id: _id });
+            let result = yield db_1.CommentModelClass.deleteOne({ _id: _id });
             return result.deletedCount === 1;
         });
     }
-};
+}
+exports.commentsRepository = new CommentsRepository();

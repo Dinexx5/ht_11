@@ -15,10 +15,10 @@ const db_1 = require("../repositories/db");
 exports.testingRouter = (0, express_1.Router)({});
 exports.testingRouter.delete('/all-data', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield db_1.BlogModelClass.deleteMany({});
-    yield db_1.PostModel.deleteMany({});
-    yield db_1.CommentModel.deleteMany({});
+    yield db_1.PostModelClass.deleteMany({});
+    yield db_1.CommentModelClass.deleteMany({});
     yield db_1.UserModel.deleteMany({});
     yield db_1.TokenModel.deleteMany({});
-    yield db_1.DeviceModel.deleteMany({});
+    yield db_1.DeviceModelClass.deleteMany({});
     return res.sendStatus(204);
 }));

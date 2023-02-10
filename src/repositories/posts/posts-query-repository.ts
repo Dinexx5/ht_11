@@ -1,12 +1,12 @@
-import {PostModel} from "../db";
+import {PostModelClass} from "../db";
 import {ObjectId} from "mongodb";
 import {
     paginationQuerys,
-    postDbModel,
+    PostDbModel,
     postViewModel, paginatedViewModel,
 } from "../../models/models";
 
-function postsMapperToPostType (post: postDbModel): postViewModel {
+function postsMapperToPostType (post: PostDbModel): postViewModel {
     return  {
         id: post._id.toString(),
         title: post.title,
@@ -18,9 +18,9 @@ function postsMapperToPostType (post: postDbModel): postViewModel {
     }
 }
 
-export const postsQueryRepository = {
+export class PostsQueryRepository {
 
-    async getPosts (query: paginationQuerys, blogId?: string): Promise< paginatedViewModel<postViewModel[]> > {
+    async getAllPosts (query: paginationQuerys, blogId?: string): Promise< paginatedViewModel<postViewModel[]> > {
         const {sortDirection = "desc", sortBy = "createdAt",pageNumber = 1,pageSize = 10} = query
 
         const sortDirectionNumber: 1 | -1 = sortDirection === "desc" ? -1 : 1;
@@ -31,9 +31,9 @@ export const postsQueryRepository = {
             filter.blogId = {$regex: blogId}
         }
 
-        const countAll = await PostModel.countDocuments(filter)
+        const countAll = await PostModelClass.countDocuments(filter)
 
-        let postsDb = await PostModel
+        let postsDb = await PostModelClass
             .find( filter )
             .sort( {[sortBy]: sortDirectionNumber, title: sortDirectionNumber, id: sortDirectionNumber} )
             .skip( skippedPostsNumber )
@@ -48,15 +48,16 @@ export const postsQueryRepository = {
             totalCount: countAll,
             items: postsView
         }
-    },
+    }
 
     async findPostById (postId: string): Promise<postViewModel | null> {
         let _id = new ObjectId(postId)
-        let foundPost: postDbModel | null = await PostModel.findOne({_id: _id})
+        let foundPost: PostDbModel | null = await PostModelClass.findOne({_id: _id})
         if (!foundPost) {
             return null
         }
         return postsMapperToPostType(foundPost)
-    },
-
+    }
 }
+
+export const postsQueryRepository = new PostsQueryRepository()

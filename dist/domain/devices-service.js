@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.devicesService = void 0;
 const jwt_service_1 = require("../application/jwt-service");
 const devices_repository_1 = require("../repositories/devices/devices-repository");
-exports.devicesService = {
+class DevicesService {
     deleteDevice(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
@@ -20,4 +20,5 @@ exports.devicesService = {
             return yield devices_repository_1.devicesRepository.deleteSessionById(deviceId);
         });
     }
-};
+}
+exports.devicesService = new DevicesService();

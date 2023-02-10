@@ -1,4 +1,4 @@
-import {deviceDbModel, refreshTokenDbModel, userAccountDbModel} from "../models/models";
+import {DeviceDbModel, refreshTokenDbModel, userAccountDbModel} from "../models/models";
 import jwt from 'jsonwebtoken'
 import {ObjectId} from "mongodb";
 import {settings} from "../settings";
@@ -35,14 +35,15 @@ export const jwtService = {
 
         }
         await jwtRepository.saveRefreshTokenMeta(tokenMeta)
-        const newDevice: deviceDbModel = {
-            _id: new ObjectId(),
-            userId: user._id,
-            ip: ip,
-            title: deviceName,
-            lastActiveDate: issuedAt,
-            deviceId: deviceId
-        }
+
+        const newDevice = new DeviceDbModel (
+            new ObjectId(),
+            user._id,
+            ip,
+            deviceName,
+            issuedAt,
+            deviceId
+        )
         await devicesRepository.saveNewDevice(newDevice)
         return refreshToken
 

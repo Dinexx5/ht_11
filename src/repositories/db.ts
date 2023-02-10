@@ -34,11 +34,11 @@ if (!mongoUri) {
 
 
 export const BlogModelClass = mongoose.model('blogs', blogSchema);
-export const PostModel = mongoose.model('posts', postSchema);
+export const PostModelClass = mongoose.model('posts', postSchema);
 export const UserModel = mongoose.model('userAccounts', userAccountSchema);
-export const CommentModel = mongoose.model('comments', commentSchema);
+export const CommentModelClass = mongoose.model('comments', commentSchema);
 export const TokenModel = mongoose.model('tokens', tokenSchema);
-export const DeviceModel = mongoose.model('devices', deviceSchema);
+export const DeviceModelClass = mongoose.model('devices', deviceSchema);
 export const AttemptModelClass = mongoose.model('attempts', attemptSchema);
 
 

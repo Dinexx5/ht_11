@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postsQueryRepository = void 0;
+exports.postsQueryRepository = exports.PostsQueryRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
 function postsMapperToPostType(post) {
@@ -23,8 +23,8 @@ function postsMapperToPostType(post) {
         createdAt: post.createdAt
     };
 }
-exports.postsQueryRepository = {
-    getPosts(query, blogId) {
+class PostsQueryRepository {
+    getAllPosts(query, blogId) {
         return __awaiter(this, void 0, void 0, function* () {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10 } = query;
             const sortDirectionNumber = sortDirection === "desc" ? -1 : 1;
@@ -33,8 +33,8 @@ exports.postsQueryRepository = {
             if (blogId) {
                 filter.blogId = { $regex: blogId };
             }
-            const countAll = yield db_1.PostModel.countDocuments(filter);
-            let postsDb = yield db_1.PostModel
+            const countAll = yield db_1.PostModelClass.countDocuments(filter);
+            let postsDb = yield db_1.PostModelClass
                 .find(filter)
                 .sort({ [sortBy]: sortDirectionNumber, title: sortDirectionNumber, id: sortDirectionNumber })
                 .skip(skippedPostsNumber)
@@ -49,15 +49,17 @@ exports.postsQueryRepository = {
                 items: postsView
             };
         });
-    },
+    }
     findPostById(postId) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(postId);
-            let foundPost = yield db_1.PostModel.findOne({ _id: _id });
+            let foundPost = yield db_1.PostModelClass.findOne({ _id: _id });
             if (!foundPost) {
                 return null;
             }
             return postsMapperToPostType(foundPost);
         });
-    },
-};
+    }
+}
+exports.PostsQueryRepository = PostsQueryRepository;
+exports.postsQueryRepository = new PostsQueryRepository();

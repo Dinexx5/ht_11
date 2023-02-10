@@ -9,43 +9,55 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.devicesRouter = void 0;
+exports.devicesControllerInstance = exports.devicesRouter = void 0;
 const express_1 = require("express");
 const jwt_service_1 = require("../application/jwt-service");
 const devices_repository_1 = require("../repositories/devices/devices-repository");
 const auth_middlewares_1 = require("../middlewares/auth-middlewares");
 exports.devicesRouter = (0, express_1.Router)({});
-exports.devicesRouter.get('/', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const refreshToken = req.cookies.refreshToken;
-    const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
-    const userId = result.userId;
-    const foundDevices = yield devices_repository_1.devicesRepository.getActiveSessions(userId);
-    return res.send(foundDevices);
-}));
-exports.devicesRouter.delete('/', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const refreshToken = req.cookies.refreshToken;
-    const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
-    const { deviceId, userId } = result;
-    const isDeleted = yield devices_repository_1.devicesRepository.deleteAllSessions(deviceId, userId);
-    if (!isDeleted) {
-        console.log('Something wrong with delete operation');
+class DevicesController {
+    getActiveSessions(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const refreshToken = req.cookies.refreshToken;
+            const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
+            const userId = result.userId;
+            const foundDevices = yield devices_repository_1.devicesRepository.getActiveSessions(userId);
+            return res.send(foundDevices);
+        });
     }
-    return res.send(204);
-}));
-exports.devicesRouter.delete('/:deviceId', auth_middlewares_1.checkRefreshTokenMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const refreshToken = req.cookies.refreshToken;
-    const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
-    const { userId } = result;
-    const foundDevice = yield devices_repository_1.devicesRepository.findDeviceByDeviceId(req.params.deviceId);
-    if (!foundDevice) {
-        return res.send(404);
+    deleteAllSessions(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const refreshToken = req.cookies.refreshToken;
+            const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
+            const { deviceId, userId } = result;
+            const isDeleted = yield devices_repository_1.devicesRepository.deleteAllSessions(deviceId, userId);
+            if (!isDeleted) {
+                console.log('Something wrong with delete operation');
+            }
+            return res.send(204);
+        });
     }
-    if (foundDevice.userId.toString() !== userId) {
-        return res.send(403);
+    deleteSession(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const refreshToken = req.cookies.refreshToken;
+            const result = yield jwt_service_1.jwtService.getRefreshTokenInfo(refreshToken);
+            const { userId } = result;
+            const foundDevice = yield devices_repository_1.devicesRepository.findDeviceByDeviceId(req.params.deviceId);
+            if (!foundDevice) {
+                return res.send(404);
+            }
+            if (foundDevice.userId.toString() !== userId) {
+                return res.send(403);
+            }
+            const isDeleted = yield devices_repository_1.devicesRepository.deleteSessionById(req.params.deviceId);
+            if (!isDeleted) {
+                console.log('Something wrong with delete operation');
+            }
+            return res.send(204);
+        });
     }
-    const isDeleted = yield devices_repository_1.devicesRepository.deleteSessionById(req.params.deviceId);
-    if (!isDeleted) {
-        console.log('Something wrong with delete operation');
-    }
-    return res.send(204);
-}));
+}
+exports.devicesControllerInstance = new DevicesController();
+exports.devicesRouter.get('/', auth_middlewares_1.checkRefreshTokenMiddleware, exports.devicesControllerInstance.getActiveSessions.bind(exports.devicesControllerInstance));
+exports.devicesRouter.delete('/', auth_middlewares_1.checkRefreshTokenMiddleware, exports.devicesControllerInstance.deleteAllSessions.bind(exports.devicesControllerInstance));
+exports.devicesRouter.delete('/:deviceId', auth_middlewares_1.checkRefreshTokenMiddleware, exports.devicesControllerInstance.deleteSession.bind(exports.devicesControllerInstance));

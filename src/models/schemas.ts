@@ -1,15 +1,15 @@
 import mongoose, {Schema} from "mongoose";
 import {
     accountData, attemptDbModel,
-    blogDbModel,
-    commentDbModel, deviceDbModel,
+    BlogDbModel,
+    CommentDbModel, DeviceDbModel,
     emailConfirmation,
     passwordRecovery,
-    postDbModel, refreshTokenDbModel,
+    PostDbModel, refreshTokenDbModel,
     userAccountDbModel
 } from "./models";
 
-export const blogSchema = new mongoose.Schema<blogDbModel>({
+export const blogSchema = new mongoose.Schema<BlogDbModel>({
     _id: Schema.Types.ObjectId,
     name: { type: String, required: true },
     description: { type: String, required: true },
@@ -17,7 +17,7 @@ export const blogSchema = new mongoose.Schema<blogDbModel>({
     createdAt: String
 });
 
-export const postSchema = new mongoose.Schema<postDbModel>({
+export const postSchema = new mongoose.Schema<PostDbModel>({
     _id: Schema.Types.ObjectId,
     title: { type: String, required: true },
     shortDescription: { type: String, required: true },
@@ -52,7 +52,7 @@ export const userAccountSchema = new mongoose.Schema<userAccountDbModel>({
     passwordRecovery: passwordRecoverySchema
 });
 
-export const commentSchema = new mongoose.Schema<commentDbModel>({
+export const commentSchema = new mongoose.Schema<CommentDbModel>({
     _id: Schema.Types.ObjectId,
     content: { type: String, required: true },
     createdAt: String,
@@ -70,7 +70,7 @@ export const tokenSchema = new mongoose.Schema<refreshTokenDbModel>({
     userId: Object,
     expiredAt: String
 });
-export const deviceSchema = new mongoose.Schema<deviceDbModel>({
+export const deviceSchema = new mongoose.Schema<DeviceDbModel>({
     _id: Schema.Types.ObjectId,
     userId: Schema.Types.ObjectId,
     ip: String,

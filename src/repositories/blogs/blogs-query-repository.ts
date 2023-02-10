@@ -1,12 +1,12 @@
 import {BlogModelClass} from "../db";
 import {ObjectId} from "mongodb";
 import {
-    blogDbModel,
+    BlogDbModel,
     blogViewModel,
     paginationQuerys, paginatedViewModel
 } from "../../models/models";
 
-function mapFoundBlogToBlogViewModel (blog: blogDbModel): blogViewModel {
+function mapFoundBlogToBlogViewModel (blog: BlogDbModel): blogViewModel {
     return  {
         name: blog.name,
         description: blog.description,
@@ -16,8 +16,7 @@ function mapFoundBlogToBlogViewModel (blog: blogDbModel): blogViewModel {
     }
 }
 
-export const blogsQueryRepository = {
-
+export class BlogsQueryRepository {
 
     async getAllBlogs(query: paginationQuerys): Promise<paginatedViewModel<blogViewModel[]>> {
 
@@ -47,16 +46,17 @@ export const blogsQueryRepository = {
             items: blogsView
         }
 
-    },
+    }
 
     async findBlogById(blogId: string): Promise<blogViewModel | null> {
 
         let _id = new ObjectId(blogId)
-        let foundBlog: blogDbModel | null = await BlogModelClass.findOne({_id: _id}).lean()
+        let foundBlog: BlogDbModel | null = await BlogModelClass.findOne({_id: _id}).lean()
         if (!foundBlog) {
             return null
         }
         return mapFoundBlogToBlogViewModel(foundBlog)
-    },
-
+    }
 }
+
+export const blogsQueryRepository = new BlogsQueryRepository()

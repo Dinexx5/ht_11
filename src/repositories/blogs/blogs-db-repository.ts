@@ -1,16 +1,14 @@
 import {BlogModelClass} from "../db";
 import {ObjectId} from "mongodb";
-import {blogDbModel, updateBlogInputModel} from "../../models/models";
+import {BlogDbModel, updateBlogInputModel} from "../../models/models";
 
+export class BlogsRepository {
 
-export const blogsRepository = {
-
-    async createBlog(newDbBlog: blogDbModel): Promise<blogDbModel> {
+    async createBlog(newDbBlog: BlogDbModel): Promise<BlogDbModel> {
         const blogInstance = new BlogModelClass(newDbBlog)
         await blogInstance.save()
         return newDbBlog
-    },
-
+    }
 
     async deleteBlogById(_id: ObjectId): Promise<boolean> {
         const blogInstance = await BlogModelClass.findOne({_id: _id})
@@ -19,8 +17,7 @@ export const blogsRepository = {
         }
         await blogInstance.deleteOne()
         return true
-    },
-
+    }
 
     async UpdateBlogById(_id: ObjectId, body: updateBlogInputModel): Promise<boolean> {
         const {name, description, websiteUrl} = body
@@ -35,3 +32,5 @@ export const blogsRepository = {
         return true
     }
 }
+
+

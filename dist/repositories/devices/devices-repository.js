@@ -12,21 +12,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.devicesRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
-exports.devicesRepository = {
+class DevicesRepository {
     saveNewDevice(newDevice) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield db_1.DeviceModel.create(newDevice);
+            yield db_1.DeviceModelClass.create(newDevice);
         });
-    },
+    }
     updateDeviceLastActiveDate(deviceId, newIssuedAt) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield db_1.DeviceModel.updateOne({ deviceId: deviceId }, { $set: { lastActiveDate: newIssuedAt } });
+            yield db_1.DeviceModelClass.updateOne({ deviceId: deviceId }, { $set: { lastActiveDate: newIssuedAt } });
         });
-    },
+    }
     getActiveSessions(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const _id = new mongodb_1.ObjectId(userId);
-            const foundDevices = yield db_1.DeviceModel.find({ userId: _id }).lean();
+            const foundDevices = yield db_1.DeviceModelClass.find({ userId: _id }).lean();
             return foundDevices.map(device => ({
                 ip: device.ip,
                 title: device.title,
@@ -34,30 +34,31 @@ exports.devicesRepository = {
                 deviceId: device.deviceId
             }));
         });
-    },
+    }
     deleteAllSessions(deviceId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const _id = new mongodb_1.ObjectId(userId);
-            const result = yield db_1.DeviceModel.deleteMany({ $and: [{ userId: _id }, { deviceId: { $ne: deviceId } }] });
+            const result = yield db_1.DeviceModelClass.deleteMany({ $and: [{ userId: _id }, { deviceId: { $ne: deviceId } }] });
             if (result.deletedCount) {
                 return true;
             }
             return false;
         });
-    },
+    }
     findDeviceByDeviceId(deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const foundDevice = yield db_1.DeviceModel.findOne({ deviceId: deviceId });
+            const foundDevice = yield db_1.DeviceModelClass.findOne({ deviceId: deviceId });
             if (!foundDevice) {
                 return null;
             }
             return foundDevice;
         });
-    },
+    }
     deleteSessionById(deviceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield db_1.DeviceModel.deleteOne({ deviceId: deviceId });
+            const result = yield db_1.DeviceModelClass.deleteOne({ deviceId: deviceId });
             return result.deletedCount === 1;
         });
-    },
-};
+    }
+}
+exports.devicesRepository = new DevicesRepository();

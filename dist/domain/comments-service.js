@@ -11,20 +11,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.commentsService = void 0;
 const comments_repository_1 = require("../repositories/comments/comments-repository");
-exports.commentsService = {
+const mongodb_1 = require("mongodb");
+class CommentsService {
     createComment(content, user, postId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield comments_repository_1.commentsRepository.createComment(content, user, postId);
+            const commentDb = {
+                _id: new mongodb_1.ObjectId(),
+                content: content,
+                createdAt: new Date().toISOString(),
+                userId: user._id.toString(),
+                userLogin: user.accountData.login,
+                postId: postId
+            };
+            yield comments_repository_1.commentsRepository.createComment(commentDb);
+            return {
+                id: commentDb._id.toString(),
+                content: commentDb.content,
+                userId: commentDb.userId,
+                userLogin: commentDb.userLogin,
+                createdAt: commentDb.createdAt
+            };
         });
-    },
+    }
     updateCommentById(id, content) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield comments_repository_1.commentsRepository.updateComment(id, content);
         });
-    },
+    }
     deleteCommentById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield comments_repository_1.commentsRepository.deleteComment(id);
         });
     }
-};
+}
+exports.commentsService = new CommentsService();
