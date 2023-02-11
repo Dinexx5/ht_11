@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.passwordAuthValidation = exports.loginOrEmailValidation = exports.newPasswordValidation = exports.recoveryCodeValidation = exports.confirmationCodeValidation = exports.emailValidationForPasswordRecovery = exports.emailValidationForResending = exports.emailValidation = exports.passwordValidation = exports.loginValidation = exports.commentContentValidation = exports.blogIdParamsValidation = exports.blogIdlValidation = exports.postContentValidation = exports.shortDescriptionValidation = exports.titleValidation = exports.websiteUrlValidation = exports.descriptionValidation = exports.nameValidation = exports.objectIdIsValidMiddleware = exports.inputValidationMiddleware = void 0;
+exports.isLikeStatusCorrect = exports.passwordAuthValidation = exports.loginOrEmailValidation = exports.newPasswordValidation = exports.recoveryCodeValidation = exports.confirmationCodeValidation = exports.emailValidationForPasswordRecovery = exports.emailValidationForResending = exports.emailValidation = exports.passwordValidation = exports.loginValidation = exports.commentContentValidation = exports.blogIdParamsValidation = exports.blogIdlValidation = exports.postContentValidation = exports.shortDescriptionValidation = exports.titleValidation = exports.websiteUrlValidation = exports.descriptionValidation = exports.nameValidation = exports.objectIdIsValidMiddleware = exports.inputValidationMiddleware = void 0;
 const express_validator_1 = require("express-validator");
 const blogs_query_repository_1 = require("../repositories/blogs/blogs-query-repository");
 const mongodb_1 = require("mongodb");
@@ -165,3 +165,12 @@ exports.loginOrEmailValidation = (0, express_validator_1.body)('loginOrEmail')
     .trim().not().isEmpty().withMessage('Not a string');
 exports.passwordAuthValidation = (0, express_validator_1.body)('password')
     .trim().not().isEmpty().withMessage('Not a string');
+exports.isLikeStatusCorrect = (0, express_validator_1.body)('likeStatus')
+    .custom((likeStatus) => __awaiter(void 0, void 0, void 0, function* () {
+    const correctStatuses = ['None', 'Like', 'Dislike'];
+    const isCorrect = correctStatuses.includes(likeStatus);
+    if (!isCorrect) {
+        throw new Error('incorrect likeStatus');
+    }
+    return true;
+}));

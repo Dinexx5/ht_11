@@ -24,13 +24,14 @@ class PostDbModel {
 }
 exports.PostDbModel = PostDbModel;
 class CommentDbModel {
-    constructor(_id, content, createdAt, userId, userLogin, postId) {
+    constructor(_id, content, createdAt, commentatorInfo, likingUsers, postId, likesInfo) {
         this._id = _id;
         this.content = content;
         this.createdAt = createdAt;
-        this.userId = userId;
-        this.userLogin = userLogin;
+        this.commentatorInfo = commentatorInfo;
+        this.likingUsers = likingUsers;
         this.postId = postId;
+        this.likesInfo = likesInfo;
     }
 }
 exports.CommentDbModel = CommentDbModel;

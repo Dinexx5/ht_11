@@ -56,9 +56,16 @@ export const commentSchema = new mongoose.Schema<CommentDbModel>({
     _id: Schema.Types.ObjectId,
     content: { type: String, required: true },
     createdAt: String,
-    userId: String,
-    userLogin: String,
+    commentatorInfo: {
+        userId: String,
+        userLogin: String
+    },
+    likingUsers: [{userId: Schema.Types.ObjectId, myStatus: String}],
     postId: String,
+    likesInfo: {
+        likesCount: Number,
+        dislikesCount: Number,
+    }
 });
 
 export const tokenSchema = new mongoose.Schema<refreshTokenDbModel>({

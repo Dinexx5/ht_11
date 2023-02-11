@@ -117,7 +117,7 @@ export type userViewModel = {
 }
 
 export type userAccountDbModel = {
-    _id: Object
+    _id: ObjectId
     accountData: accountData
     emailConfirmation: emailConfirmation
     passwordRecovery: passwordRecovery
@@ -162,9 +162,16 @@ export type createCommentInputModel = {
 export type commentViewModel = {
     id: string
     content: string
-    userId: string
-    userLogin: string
-    createdAt: string
+    commentatorInfo: {
+        userId: string,
+        userLogin: string
+    }
+    createdAt: string,
+    likesInfo: {
+        likesCount: number,
+        dislikesCount: number,
+        myStatus: string
+    }
 }
 
 export class CommentDbModel {
@@ -172,9 +179,16 @@ export class CommentDbModel {
         public _id: ObjectId,
         public content: string,
         public createdAt: string,
-        public userId: string,
-        public userLogin: string,
-        public postId: string
+        public commentatorInfo: {
+            userId: string,
+            userLogin: string
+        },
+        public likingUsers: {userId: ObjectId, myStatus: string}[],
+        public postId: string,
+        public likesInfo: {
+            likesCount: number,
+            dislikesCount: number,
+        }
     ) {
     }
 }
@@ -220,4 +234,7 @@ export type attemptDbModel = {
     _id: object
     requestData: string
     date: string
+}
+export type likeInputModel = {
+    likeStatus: "String"
 }

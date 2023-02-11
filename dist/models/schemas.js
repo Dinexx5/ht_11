@@ -66,9 +66,16 @@ exports.commentSchema = new mongoose_1.default.Schema({
     _id: mongoose_1.Schema.Types.ObjectId,
     content: { type: String, required: true },
     createdAt: String,
-    userId: String,
-    userLogin: String,
+    commentatorInfo: {
+        userId: String,
+        userLogin: String
+    },
+    likingUsers: [{ userId: mongoose_1.Schema.Types.ObjectId, myStatus: String }],
     postId: String,
+    likesInfo: {
+        likesCount: Number,
+        dislikesCount: Number,
+    }
 });
 exports.tokenSchema = new mongoose_1.default.Schema({
     _id: mongoose_1.Schema.Types.ObjectId,

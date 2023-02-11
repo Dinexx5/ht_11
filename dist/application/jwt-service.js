@@ -23,13 +23,13 @@ const users_repository_db_1 = require("../repositories/users/users-repository-db
 exports.jwtService = {
     createJWTAccessToken(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            return jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "10s" });
+            return jsonwebtoken_1.default.sign({ userId: user._id }, settings_1.settings.JWT_ACCESS_SECRET, { expiresIn: "36000s" });
         });
     },
     createJWTRefreshToken(user, deviceName, ip) {
         return __awaiter(this, void 0, void 0, function* () {
             const deviceId = new Date().toISOString();
-            const refreshToken = jsonwebtoken_1.default.sign({ userId: user._id, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
+            const refreshToken = jsonwebtoken_1.default.sign({ userId: user._id, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "50000s" });
             const result = yield this.getRefreshTokenInfo(refreshToken);
             const issuedAt = new Date(result.iat * 1000).toISOString();
             const expiredAt = new Date(result.exp * 1000).toISOString();
@@ -52,7 +52,7 @@ exports.jwtService = {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield this.getRefreshTokenInfo(refreshToken);
             const { deviceId, userId, exp } = result;
-            const newRefreshToken = jsonwebtoken_1.default.sign({ userId: userId, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "20s" });
+            const newRefreshToken = jsonwebtoken_1.default.sign({ userId: userId, deviceId: deviceId }, settings_1.settings.JWT_REFRESH_SECRET, { expiresIn: "50000s" });
             const newResult = yield this.getRefreshTokenInfo(newRefreshToken);
             const newExpiredAt = new Date(newResult.exp * 1000).toISOString();
             const newIssuedAt = new Date(newResult.iat * 1000).toISOString();

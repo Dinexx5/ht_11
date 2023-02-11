@@ -4,6 +4,7 @@ import {blogsQueryRepository} from "../repositories/blogs/blogs-query-repository
 import {blogViewModel, userAccountDbModel} from "../models/models";
 import {ObjectId} from "mongodb";
 import {usersRepository} from "../repositories/users/users-repository-db";
+import {commentsRepository} from "../repositories/comments/comments-repository";
 
 
 const myValidationResult = validationResult.withDefaults({
@@ -183,5 +184,15 @@ export const loginOrEmailValidation = body('loginOrEmail')
 
 export const passwordAuthValidation = body('password')
     .trim().not().isEmpty().withMessage('Not a string')
+
+export const isLikeStatusCorrect = body('likeStatus')
+    .custom(async (likeStatus) => {
+        const correctStatuses = ['None', 'Like', 'Dislike']
+        const isCorrect = correctStatuses.includes(likeStatus)
+        if (!isCorrect) {
+            throw new Error('incorrect likeStatus');
+        }
+        return true
+    })
 
 

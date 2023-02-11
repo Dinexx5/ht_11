@@ -6,13 +6,13 @@ import {
     RequestWithParamsAndBody,
 } from "../models/types";
 import {
-    commentViewModel, createCommentInputModel,
+    commentViewModel, createCommentInputModel, likeInputModel,
     paramsIdModel,
 } from "../models/models";
 
 import {
     commentContentValidation,
-    inputValidationMiddleware,
+    inputValidationMiddleware, isLikeStatusCorrect,
     objectIdIsValidMiddleware
 } from "../middlewares/input-validation";
 import {bearerAuthMiddleware} from "../middlewares/auth-middlewares";
@@ -24,44 +24,46 @@ class CommentsController {
     async getComments (req: RequestWithParams<paramsIdModel>, res: Response){
         const returnedComment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id)
         if (!returnedComment) {
-        res.send(404)
-        return
+        return res.sendStatus(404)
         }
-        res.send(returnedComment)
+        return res.send(returnedComment)
     }
 
-    async createComment (req: RequestWithParamsAndBody<paramsIdModel, createCommentInputModel>, res: Response) {
+    async updateComment (req: RequestWithParamsAndBody<paramsIdModel, createCommentInputModel>, res: Response) {
         const comment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id)
         if (!comment) {
-        res.send(404)
-        return
+        return res.sendStatus(404)
         }
-        if (comment.userId !== req.user!._id.toString()) {
-            res.send(403)
-            return
+        if (comment.commentatorInfo.userId !== req.user!._id.toString()) {
+        return  res.sendStatus(403)
         }
         const isUpdated = await commentsService.updateCommentById(req.params.id, req.body.content)
 
         if (!isUpdated) {
-            res.send(404)
+            return res.sendStatus(404)
         }
-        res.send(204)
+        return res.sendStatus(204)
     }
     async deleteComment (req: RequestWithParams<paramsIdModel>, res: Response)  {
         const comment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id)
         if (!comment) {
-        res.send(404)
-        return
+        return res.sendStatus(404)
         }
-        if (comment.userId !== req.user!._id.toString()) {
-            res.send(403)
-            return
+        if (comment.commentatorInfo.userId !== req.user!._id.toString()) {
+       return res.sendStatus(403)
         }
         const isDeleted: boolean = await commentsService.deleteCommentById(req.params.id)
         if (!isDeleted) {
-            res.send(404)
+           return res.sendStatus(404)
         }
-        res.send(204)
+        return res.sendStatus(204)
+    }
+    async likeComment (req: RequestWithParamsAndBody<paramsIdModel, likeInputModel>, res: Response) {
+        const isLiked = await commentsService.likeComment(req.params.id, req.body.likeStatus, req.user!)
+        if (!isLiked) {
+            res.sendStatus(404)
+        }
+        res.sendStatus(201)
     }
 }
 
@@ -77,12 +79,20 @@ commentsRouter.put('/:id',
     objectIdIsValidMiddleware,
     commentContentValidation,
     inputValidationMiddleware,
-    commentsControllerInstance.createComment.bind(commentsControllerInstance)
+    commentsControllerInstance.updateComment.bind(commentsControllerInstance)
 )
 
 commentsRouter.delete('/:id',
     bearerAuthMiddleware,
     objectIdIsValidMiddleware,
     commentsControllerInstance.deleteComment.bind(commentsControllerInstance)
+)
+
+commentsRouter.put('/:id/like-status',
+    bearerAuthMiddleware,
+    objectIdIsValidMiddleware,
+    isLikeStatusCorrect,
+    inputValidationMiddleware,
+    commentsControllerInstance.likeComment.bind(commentsControllerInstance)
 )
 
