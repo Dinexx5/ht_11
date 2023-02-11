@@ -64,7 +64,7 @@ class CommentsController {
             if (!isLiked) {
                 res.sendStatus(404);
             }
-            res.sendStatus(201);
+            res.sendStatus(204);
         });
     }
 }
