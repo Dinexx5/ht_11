@@ -14,29 +14,33 @@ const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
 function mapCommentToCommentViewModel(comment, user) {
     if (!user) {
-        return mapCommentToCommentViewModelNoAuth(comment);
+        return mapCommentToCommentViewModelWithAuth(comment);
     }
     const userId = user._id;
     const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
     if (!isUser) {
-        return mapCommentToCommentViewModelNoAuth(comment);
+        return mapCommentToCommentViewModelWithAuth(comment);
     }
     const myStatus = isUser.myStatus;
     return mapCommentToCommentViewModelWithAuth(comment, myStatus);
 }
 function mapCommentsToCommentViewModel(comment) {
-    if (!this) {
-        return mapCommentToCommentViewModelNoAuth(comment);
+    if (!this || !this.user) {
+        return mapCommentToCommentViewModelWithAuth(comment);
     }
     const userId = this.user._id;
     const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
     if (!isUser) {
-        return mapCommentToCommentViewModelNoAuth(comment);
+        return mapCommentToCommentViewModelWithAuth(comment);
     }
     const myStatus = isUser.myStatus;
     return mapCommentToCommentViewModelWithAuth(comment, myStatus);
 }
 function mapCommentToCommentViewModelWithAuth(comment, myStatus) {
+    const filter = { myStatus: "None" };
+    if (myStatus) {
+        filter.myStatus = myStatus;
+    }
     return {
         id: comment._id.toString(),
         content: comment.content,
@@ -48,26 +52,26 @@ function mapCommentToCommentViewModelWithAuth(comment, myStatus) {
         likesInfo: {
             likesCount: comment.likesInfo.likesCount,
             dislikesCount: comment.likesInfo.dislikesCount,
-            myStatus: myStatus
+            myStatus: filter.myStatus
         }
     };
 }
-function mapCommentToCommentViewModelNoAuth(comment) {
-    return {
-        id: comment._id.toString(),
-        content: comment.content,
-        commentatorInfo: {
-            userId: comment.commentatorInfo.userId,
-            userLogin: comment.commentatorInfo.userLogin
-        },
-        createdAt: comment.createdAt,
-        likesInfo: {
-            likesCount: comment.likesInfo.likesCount,
-            dislikesCount: comment.likesInfo.dislikesCount,
-            myStatus: "None"
-        }
-    };
-}
+// function mapCommentToCommentViewModelNoAuth (comment: CommentDbModel): commentViewModel {
+//     return  {
+//         id: comment._id.toString(),
+//         content: comment.content,
+//         commentatorInfo: {
+//             userId: comment.commentatorInfo.userId,
+//             userLogin: comment.commentatorInfo.userLogin
+//         },
+//         createdAt: comment.createdAt,
+//         likesInfo: {
+//             likesCount: comment.likesInfo.likesCount,
+//             dislikesCount:  comment.likesInfo.dislikesCount,
+//             myStatus: "None"
+//         }
+//     }
+// }
 class CommentsQueryRepository {
     getAllCommentsForPost(query, postId, user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -81,16 +85,6 @@ class CommentsQueryRepository {
                 .skip(skippedCommentsNumber)
                 .limit(+pageSize)
                 .lean();
-            if (!user) {
-                const commentsView = commentsDb.map(mapCommentsToCommentViewModel);
-                return {
-                    pagesCount: Math.ceil(countAll / +pageSize),
-                    page: +pageNumber,
-                    pageSize: +pageSize,
-                    totalCount: countAll,
-                    items: commentsView
-                };
-            }
             const commentsView = commentsDb.map(mapCommentsToCommentViewModel, { user: user });
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
@@ -101,29 +95,6 @@ class CommentsQueryRepository {
             };
         });
     }
-    // async getAllCommentsForPostNoAuth(query: paginationQuerys, postId: string): Promise<paginatedViewModel<commentViewModel[]>> {
-    //
-    //     const {sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10} = query
-    //     const sortDirectionNumber: 1 | -1 = sortDirection === "desc" ? -1 : 1;
-    //     const skippedCommentsNumber = (+pageNumber - 1) * +pageSize
-    //
-    //     const countAll = await CommentModelClass.countDocuments({postId: postId})
-    //     let commentsDb = await CommentModelClass
-    //         .find({postId: postId})
-    //         .sort({[sortBy]: sortDirectionNumber})
-    //         .skip(skippedCommentsNumber)
-    //         .limit(+pageSize)
-    //         .lean()
-    //
-    //     const commentsView = commentsDb.map(mapCommentToCommentViewModelNoAuth)
-    //     return {
-    //         pagesCount: Math.ceil(countAll / +pageSize),
-    //         page: +pageNumber,
-    //         pageSize: +pageSize,
-    //         totalCount: countAll,
-    //         items: commentsView
-    //     }
-    // }
     findCommentById(commentId, user) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(commentId);
