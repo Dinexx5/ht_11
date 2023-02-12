@@ -76,7 +76,7 @@ class PostsController {
             }
             const user = req.user;
             if (!user) {
-                const returnedComments = yield comments_query_repository_1.commentsQueryRepository.getAllCommentsForPostNoAuth(req.query, req.params.id);
+                const returnedComments = yield comments_query_repository_1.commentsQueryRepository.getAllCommentsForPost(req.query, req.params.id);
                 if (!returnedComments) {
                     return res.sendStatus(404);
                 }

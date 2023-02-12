@@ -24,7 +24,7 @@ class CommentsController {
     async getComment (req: RequestWithParams<paramsIdModel>, res: Response){
         const user = req.user
         if (!user) {
-           const returnedComment = await commentsQueryRepository.findComment(req.params.id)
+           const returnedComment = await commentsQueryRepository.findCommentById(req.params.id)
             if (!returnedComment) {
                 return res.sendStatus(404)
             }

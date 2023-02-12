@@ -84,7 +84,7 @@ class PostsController {
         }
         const user = req.user
         if (!user) {
-            const returnedComments:paginatedViewModel<commentViewModel[]> = await commentsQueryRepository.getAllCommentsForPostNoAuth(req.query,req.params.id)
+            const returnedComments:paginatedViewModel<commentViewModel[]> = await commentsQueryRepository.getAllCommentsForPost(req.query,req.params.id)
             if (!returnedComments) {
                 return res.sendStatus(404)
             }

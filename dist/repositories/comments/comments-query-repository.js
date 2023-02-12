@@ -13,25 +13,30 @@ exports.commentsQueryRepository = exports.CommentsQueryRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
 function mapCommentToCommentViewModel(comment, user) {
+    if (!user) {
+        return mapCommentToCommentViewModelNoAuth(comment);
+    }
     const userId = user._id;
     const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
     if (!isUser) {
-        return {
-            id: comment._id.toString(),
-            content: comment.content,
-            commentatorInfo: {
-                userId: comment.commentatorInfo.userId,
-                userLogin: comment.commentatorInfo.userLogin
-            },
-            createdAt: comment.createdAt,
-            likesInfo: {
-                likesCount: comment.likesInfo.likesCount,
-                dislikesCount: comment.likesInfo.dislikesCount,
-                myStatus: "None"
-            }
-        };
+        return mapCommentToCommentViewModelNoAuth(comment);
     }
     const myStatus = isUser.myStatus;
+    return mapCommentToCommentViewModelWithAuth(comment, myStatus);
+}
+function mapCommentsToCommentViewModel(comment) {
+    if (!this) {
+        return mapCommentToCommentViewModelNoAuth(comment);
+    }
+    const userId = this.user._id;
+    const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
+    if (!isUser) {
+        return mapCommentToCommentViewModelNoAuth(comment);
+    }
+    const myStatus = isUser.myStatus;
+    return mapCommentToCommentViewModelWithAuth(comment, myStatus);
+}
+function mapCommentToCommentViewModelWithAuth(comment, myStatus) {
     return {
         id: comment._id.toString(),
         content: comment.content,
@@ -47,7 +52,7 @@ function mapCommentToCommentViewModel(comment, user) {
         }
     };
 }
-function mapCommentsToCommentViewModelNoAuth(comment) {
+function mapCommentToCommentViewModelNoAuth(comment) {
     return {
         id: comment._id.toString(),
         content: comment.content,
@@ -60,41 +65,6 @@ function mapCommentsToCommentViewModelNoAuth(comment) {
             likesCount: comment.likesInfo.likesCount,
             dislikesCount: comment.likesInfo.dislikesCount,
             myStatus: "None"
-        }
-    };
-}
-function mapCommentsToCommentViewModelWithAuth(comment) {
-    const userId = this.user._id;
-    const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
-    if (!isUser) {
-        return {
-            id: comment._id.toString(),
-            content: comment.content,
-            commentatorInfo: {
-                userId: comment.commentatorInfo.userId,
-                userLogin: comment.commentatorInfo.userLogin
-            },
-            createdAt: comment.createdAt,
-            likesInfo: {
-                likesCount: comment.likesInfo.likesCount,
-                dislikesCount: comment.likesInfo.dislikesCount,
-                myStatus: "None"
-            }
-        };
-    }
-    const myStatus = isUser.myStatus;
-    return {
-        id: comment._id.toString(),
-        content: comment.content,
-        commentatorInfo: {
-            userId: comment.commentatorInfo.userId,
-            userLogin: comment.commentatorInfo.userLogin
-        },
-        createdAt: comment.createdAt,
-        likesInfo: {
-            likesCount: comment.likesInfo.likesCount,
-            dislikesCount: comment.likesInfo.dislikesCount,
-            myStatus: myStatus
         }
     };
 }
@@ -111,8 +81,17 @@ class CommentsQueryRepository {
                 .skip(skippedCommentsNumber)
                 .limit(+pageSize)
                 .lean();
-            console.log(user);
-            const commentsView = commentsDb.map(mapCommentsToCommentViewModelWithAuth, { user: user });
+            if (!user) {
+                const commentsView = commentsDb.map(mapCommentsToCommentViewModel);
+                return {
+                    pagesCount: Math.ceil(countAll / +pageSize),
+                    page: +pageNumber,
+                    pageSize: +pageSize,
+                    totalCount: countAll,
+                    items: commentsView
+                };
+            }
+            const commentsView = commentsDb.map(mapCommentsToCommentViewModel, { user: user });
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
                 page: +pageNumber,
@@ -122,28 +101,29 @@ class CommentsQueryRepository {
             };
         });
     }
-    getAllCommentsForPostNoAuth(query, postId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10 } = query;
-            const sortDirectionNumber = sortDirection === "desc" ? -1 : 1;
-            const skippedCommentsNumber = (+pageNumber - 1) * +pageSize;
-            const countAll = yield db_1.CommentModelClass.countDocuments({ postId: postId });
-            let commentsDb = yield db_1.CommentModelClass
-                .find({ postId: postId })
-                .sort({ [sortBy]: sortDirectionNumber })
-                .skip(skippedCommentsNumber)
-                .limit(+pageSize)
-                .lean();
-            const commentsView = commentsDb.map(mapCommentsToCommentViewModelNoAuth);
-            return {
-                pagesCount: Math.ceil(countAll / +pageSize),
-                page: +pageNumber,
-                pageSize: +pageSize,
-                totalCount: countAll,
-                items: commentsView
-            };
-        });
-    }
+    // async getAllCommentsForPostNoAuth(query: paginationQuerys, postId: string): Promise<paginatedViewModel<commentViewModel[]>> {
+    //
+    //     const {sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10} = query
+    //     const sortDirectionNumber: 1 | -1 = sortDirection === "desc" ? -1 : 1;
+    //     const skippedCommentsNumber = (+pageNumber - 1) * +pageSize
+    //
+    //     const countAll = await CommentModelClass.countDocuments({postId: postId})
+    //     let commentsDb = await CommentModelClass
+    //         .find({postId: postId})
+    //         .sort({[sortBy]: sortDirectionNumber})
+    //         .skip(skippedCommentsNumber)
+    //         .limit(+pageSize)
+    //         .lean()
+    //
+    //     const commentsView = commentsDb.map(mapCommentToCommentViewModelNoAuth)
+    //     return {
+    //         pagesCount: Math.ceil(countAll / +pageSize),
+    //         page: +pageNumber,
+    //         pageSize: +pageSize,
+    //         totalCount: countAll,
+    //         items: commentsView
+    //     }
+    // }
     findCommentById(commentId, user) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(commentId);
@@ -152,16 +132,6 @@ class CommentsQueryRepository {
                 return null;
             }
             return mapCommentToCommentViewModel(foundComment, user);
-        });
-    }
-    findComment(commentId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let _id = new mongodb_1.ObjectId(commentId);
-            let foundComment = yield db_1.CommentModelClass.findOne({ _id: _id });
-            if (!foundComment) {
-                return null;
-            }
-            return mapCommentsToCommentViewModelNoAuth(foundComment);
         });
     }
 }
