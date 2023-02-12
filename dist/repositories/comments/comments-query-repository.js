@@ -63,8 +63,66 @@ function mapCommentsToCommentViewModelNoAuth(comment) {
         }
     };
 }
+function mapCommentsToCommentViewModelWithAuth(comment) {
+    const userId = this.user._id;
+    const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
+    if (!isUser) {
+        return {
+            id: comment._id.toString(),
+            content: comment.content,
+            commentatorInfo: {
+                userId: comment.commentatorInfo.userId,
+                userLogin: comment.commentatorInfo.userLogin
+            },
+            createdAt: comment.createdAt,
+            likesInfo: {
+                likesCount: comment.likesInfo.likesCount,
+                dislikesCount: comment.likesInfo.dislikesCount,
+                myStatus: "None"
+            }
+        };
+    }
+    const myStatus = isUser.myStatus;
+    return {
+        id: comment._id.toString(),
+        content: comment.content,
+        commentatorInfo: {
+            userId: comment.commentatorInfo.userId,
+            userLogin: comment.commentatorInfo.userLogin
+        },
+        createdAt: comment.createdAt,
+        likesInfo: {
+            likesCount: comment.likesInfo.likesCount,
+            dislikesCount: comment.likesInfo.dislikesCount,
+            myStatus: myStatus
+        }
+    };
+}
 class CommentsQueryRepository {
-    getAllCommentsForPost(query, postId) {
+    getAllCommentsForPost(query, postId, user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10 } = query;
+            const sortDirectionNumber = sortDirection === "desc" ? -1 : 1;
+            const skippedCommentsNumber = (+pageNumber - 1) * +pageSize;
+            const countAll = yield db_1.CommentModelClass.countDocuments({ postId: postId });
+            let commentsDb = yield db_1.CommentModelClass
+                .find({ postId: postId })
+                .sort({ [sortBy]: sortDirectionNumber })
+                .skip(skippedCommentsNumber)
+                .limit(+pageSize)
+                .lean();
+            console.log(user);
+            const commentsView = commentsDb.map(mapCommentsToCommentViewModelWithAuth, { user: user });
+            return {
+                pagesCount: Math.ceil(countAll / +pageSize),
+                page: +pageNumber,
+                pageSize: +pageSize,
+                totalCount: countAll,
+                items: commentsView
+            };
+        });
+    }
+    getAllCommentsForPostNoAuth(query, postId) {
         return __awaiter(this, void 0, void 0, function* () {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10 } = query;
             const sortDirectionNumber = sortDirection === "desc" ? -1 : 1;

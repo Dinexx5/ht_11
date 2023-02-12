@@ -26,7 +26,7 @@ import {
 } from "../models/models";
 import {commentsService} from "../domain/comments-service";
 import {commentsQueryRepository} from "../repositories/comments/comments-query-repository";
-import {basicAuthMiddleware, bearerAuthMiddleware} from "../middlewares/auth-middlewares";
+import {basicAuthMiddleware, bearerAuthMiddleware, getCommentAuthMiddleware} from "../middlewares/auth-middlewares";
 
 
 export const postsRouter = Router({})
@@ -82,7 +82,15 @@ class PostsController {
         if (!foundPost) {
         return res.sendStatus(404)
         }
-        const returnedComments: paginatedViewModel<commentViewModel[]> = await commentsQueryRepository.getAllCommentsForPost(req.query, req.params.id)
+        const user = req.user
+        if (!user) {
+            const returnedComments:paginatedViewModel<commentViewModel[]> = await commentsQueryRepository.getAllCommentsForPostNoAuth(req.query,req.params.id)
+            if (!returnedComments) {
+                return res.sendStatus(404)
+            }
+            return res.send(returnedComments)
+        }
+        const returnedComments: paginatedViewModel<commentViewModel[]> = await commentsQueryRepository.getAllCommentsForPost(req.query, req.params.id, user)
         return res.send(returnedComments)
     }
 }
@@ -131,5 +139,6 @@ postsRouter.post('/:id/comments',
 )
 
 postsRouter.get('/:id/comments',
+    getCommentAuthMiddleware,
     postsControllerInstance.getComments.bind(postsControllerInstance)
 )
