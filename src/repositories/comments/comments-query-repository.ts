@@ -23,7 +23,7 @@ function mapCommentToCommentViewModel (comment: CommentDbModel, user: userAccoun
         }
     }
 }
-function mapCommentsToCommentViewModel (comment: CommentDbModel): commentViewModel {
+function mapCommentsToCommentViewModelNoAuth (comment: CommentDbModel): commentViewModel {
     return  {
         id: comment._id.toString(),
         content: comment.content,
@@ -40,6 +40,7 @@ function mapCommentsToCommentViewModel (comment: CommentDbModel): commentViewMod
     }
 }
 
+
 export class CommentsQueryRepository {
     async getAllCommentsForPost(query: paginationQuerys, postId: string): Promise<paginatedViewModel<commentViewModel[]>> {
 
@@ -55,7 +56,7 @@ export class CommentsQueryRepository {
             .limit(+pageSize)
             .lean()
 
-        const commentsView = commentsDb.map(mapCommentsToCommentViewModel)
+        const commentsView = commentsDb.map(mapCommentsToCommentViewModelNoAuth)
         return {
             pagesCount: Math.ceil(countAll / +pageSize),
             page: +pageNumber,
@@ -72,6 +73,16 @@ export class CommentsQueryRepository {
             return null
         }
         return mapCommentToCommentViewModel(foundComment, user)
+    }
+
+    async findComment(commentId: string): Promise<commentViewModel | null> {
+
+        let _id = new ObjectId(commentId)
+        let foundComment: CommentDbModel | null = await CommentModelClass.findOne({_id: _id})
+        if (!foundComment) {
+            return null
+        }
+        return mapCommentsToCommentViewModelNoAuth(foundComment)
     }
 }
 export const commentsQueryRepository = new CommentsQueryRepository()

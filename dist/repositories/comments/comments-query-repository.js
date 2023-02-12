@@ -30,7 +30,7 @@ function mapCommentToCommentViewModel(comment, user) {
         }
     };
 }
-function mapCommentsToCommentViewModel(comment) {
+function mapCommentsToCommentViewModelNoAuth(comment) {
     return {
         id: comment._id.toString(),
         content: comment.content,
@@ -59,7 +59,7 @@ class CommentsQueryRepository {
                 .skip(skippedCommentsNumber)
                 .limit(+pageSize)
                 .lean();
-            const commentsView = commentsDb.map(mapCommentsToCommentViewModel);
+            const commentsView = commentsDb.map(mapCommentsToCommentViewModelNoAuth);
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
                 page: +pageNumber,
@@ -77,6 +77,16 @@ class CommentsQueryRepository {
                 return null;
             }
             return mapCommentToCommentViewModel(foundComment, user);
+        });
+    }
+    findComment(commentId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let _id = new mongodb_1.ObjectId(commentId);
+            let foundComment = yield db_1.CommentModelClass.findOne({ _id: _id });
+            if (!foundComment) {
+                return null;
+            }
+            return mapCommentsToCommentViewModelNoAuth(foundComment);
         });
     }
 }

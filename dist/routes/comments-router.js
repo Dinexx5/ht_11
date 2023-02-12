@@ -19,6 +19,14 @@ exports.commentsRouter = (0, express_1.Router)({});
 class CommentsController {
     getComment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            const user = req.user;
+            if (!user) {
+                const returnedComment = yield comments_query_repository_1.commentsQueryRepository.findComment(req.params.id);
+                if (!returnedComment) {
+                    return res.sendStatus(404);
+                }
+                return res.send(returnedComment);
+            }
             const returnedComment = yield comments_query_repository_1.commentsQueryRepository.findCommentById(req.params.id, req.user);
             if (!returnedComment) {
                 return res.sendStatus(404);
@@ -69,7 +77,7 @@ class CommentsController {
     }
 }
 exports.commentsControllerInstance = new CommentsController();
-exports.commentsRouter.get('/:id', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, exports.commentsControllerInstance.getComment.bind(exports.commentsControllerInstance));
+exports.commentsRouter.get('/:id', auth_middlewares_1.getCommentAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, exports.commentsControllerInstance.getComment.bind(exports.commentsControllerInstance));
 exports.commentsRouter.put('/:id', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, input_validation_1.commentContentValidation, input_validation_1.inputValidationMiddleware, exports.commentsControllerInstance.updateComment.bind(exports.commentsControllerInstance));
 exports.commentsRouter.delete('/:id', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, exports.commentsControllerInstance.deleteComment.bind(exports.commentsControllerInstance));
 exports.commentsRouter.put('/:id/like-status', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, input_validation_1.isLikeStatusCorrect, input_validation_1.inputValidationMiddleware, exports.commentsControllerInstance.likeComment.bind(exports.commentsControllerInstance));
