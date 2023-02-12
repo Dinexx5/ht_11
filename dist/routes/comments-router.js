@@ -19,14 +19,6 @@ exports.commentsRouter = (0, express_1.Router)({});
 class CommentsController {
     getComment(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            // const user = req.user
-            // if (!user) {
-            //    const returnedComment = await commentsQueryRepository.findCommentById(req.params.id)
-            //     if (!returnedComment) {
-            //         return res.sendStatus(404)
-            //     }
-            //     return res.send(returnedComment)
-            // }
             const returnedComment = yield comments_query_repository_1.commentsQueryRepository.findCommentById(req.params.id, req.user);
             if (!returnedComment) {
                 return res.sendStatus(404);

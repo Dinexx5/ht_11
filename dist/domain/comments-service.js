@@ -59,21 +59,18 @@ class CommentsService {
                 return false;
             }
             const userId = user._id;
-            const userLikedObject = commentInstance.likingUsers.find(user => user.userId.toString() === userId.toString());
-            console.log(userLikedObject);
-            if (!userLikedObject) {
+            const callback = (user) => user.userId.toString() === userId.toString();
+            const isUserLikedBefore = commentInstance.likingUsers.find(callback);
+            if (!isUserLikedBefore) {
                 commentInstance.likingUsers.push({ userId: userId, myStatus: "None" });
                 yield commentInstance.save();
             }
-            const indexOfUser = commentInstance.likingUsers.findIndex(user => user.userId.toString() === userId.toString());
-            console.log(indexOfUser);
-            const myStatus = commentInstance.likingUsers.find(user => user.userId.toString() === userId.toString()).myStatus;
-            console.log(myStatus);
+            const indexOfUser = commentInstance.likingUsers.findIndex(callback);
+            const myStatus = commentInstance.likingUsers.find(callback).myStatus;
             switch (likeStatus) {
                 case 'Like':
                     if (myStatus === "Like") {
                         commentInstance.likingUsers[indexOfUser].myStatus = "Like";
-                        // --commentInstance!.likesInfo.likesCount
                     }
                     if (myStatus === "None") {
                         ++commentInstance.likesInfo.likesCount;
@@ -96,7 +93,6 @@ class CommentsService {
                         commentInstance.likingUsers[indexOfUser].myStatus = "Dislike";
                     }
                     if (myStatus === "Dislike") {
-                        // --commentInstance!.likesInfo.dislikesCount
                         commentInstance.likingUsers[indexOfUser].myStatus = "Dislike";
                     }
                     break;

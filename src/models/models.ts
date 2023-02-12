@@ -238,3 +238,7 @@ export type attemptDbModel = {
 export type likeInputModel = {
     likeStatus: "String"
 }
+export type likingUserModel = {
+    userId: ObjectId,
+    myStatus: string
+}
