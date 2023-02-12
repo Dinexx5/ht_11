@@ -72,8 +72,8 @@ class CommentsService {
             switch (likeStatus) {
                 case 'Like':
                     if (myStatus === "Like") {
-                        commentInstance.likingUsers[indexOfUser].myStatus = "None";
-                        --commentInstance.likesInfo.likesCount;
+                        commentInstance.likingUsers[indexOfUser].myStatus = "Like";
+                        // --commentInstance!.likesInfo.likesCount
                     }
                     if (myStatus === "None") {
                         ++commentInstance.likesInfo.likesCount;
@@ -96,8 +96,8 @@ class CommentsService {
                         commentInstance.likingUsers[indexOfUser].myStatus = "Dislike";
                     }
                     if (myStatus === "Dislike") {
-                        --commentInstance.likesInfo.dislikesCount;
-                        commentInstance.likingUsers[indexOfUser].myStatus = "None";
+                        // --commentInstance!.likesInfo.dislikesCount
+                        commentInstance.likingUsers[indexOfUser].myStatus = "Dislike";
                     }
                     break;
                 case 'None':

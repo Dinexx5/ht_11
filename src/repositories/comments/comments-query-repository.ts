@@ -7,7 +7,24 @@ import {ObjectId} from "mongodb";
 
 function mapCommentToCommentViewModel (comment: CommentDbModel, user: userAccountDbModel): commentViewModel {
     const userId = user._id
-    const myStatus = comment.likingUsers.find(user => user.userId.toString() === userId.toString())!.myStatus
+    const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString())!
+    if (!isUser) {
+        return  {
+            id: comment._id.toString(),
+            content: comment.content,
+            commentatorInfo: {
+                userId: comment.commentatorInfo.userId,
+                userLogin: comment.commentatorInfo.userLogin
+            },
+            createdAt: comment.createdAt,
+            likesInfo: {
+                likesCount: comment.likesInfo.likesCount,
+                dislikesCount:  comment.likesInfo.dislikesCount,
+                myStatus: "None"
+            }
+        }
+    }
+    const myStatus = isUser.myStatus
     return  {
         id: comment._id.toString(),
         content: comment.content,
