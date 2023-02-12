@@ -12,7 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.commentsQueryRepository = exports.CommentsQueryRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
-function mapCommentToCommentViewModel(comment) {
+function mapCommentToCommentViewModel(comment, user) {
+    const userId = user._id;
+    const myStatus = comment.likingUsers.find(user => user.userId.toString() === userId.toString()).myStatus;
     return {
         id: comment._id.toString(),
         content: comment.content,
@@ -24,7 +26,23 @@ function mapCommentToCommentViewModel(comment) {
         likesInfo: {
             likesCount: comment.likesInfo.likesCount,
             dislikesCount: comment.likesInfo.dislikesCount,
-            myStatus: 'None'
+            myStatus: myStatus
+        }
+    };
+}
+function mapCommentsToCommentViewModel(comment) {
+    return {
+        id: comment._id.toString(),
+        content: comment.content,
+        commentatorInfo: {
+            userId: comment.commentatorInfo.userId,
+            userLogin: comment.commentatorInfo.userLogin
+        },
+        createdAt: comment.createdAt,
+        likesInfo: {
+            likesCount: comment.likesInfo.likesCount,
+            dislikesCount: comment.likesInfo.dislikesCount,
+            myStatus: "None"
         }
     };
 }
@@ -41,7 +59,7 @@ class CommentsQueryRepository {
                 .skip(skippedCommentsNumber)
                 .limit(+pageSize)
                 .lean();
-            const commentsView = commentsDb.map(mapCommentToCommentViewModel);
+            const commentsView = commentsDb.map(mapCommentsToCommentViewModel);
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
                 page: +pageNumber,
@@ -51,14 +69,14 @@ class CommentsQueryRepository {
             };
         });
     }
-    findCommentById(commentId) {
+    findCommentById(commentId, user) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(commentId);
             let foundComment = yield db_1.CommentModelClass.findOne({ _id: _id });
             if (!foundComment) {
                 return null;
             }
-            return mapCommentToCommentViewModel(foundComment);
+            return mapCommentToCommentViewModel(foundComment, user);
         });
     }
 }

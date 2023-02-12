@@ -1,11 +1,13 @@
 import {
     CommentDbModel, commentViewModel,
-    paginationQuerys, paginatedViewModel
+    paginationQuerys, paginatedViewModel, userAccountDbModel
 } from "../../models/models";
 import {CommentModelClass} from "../db";
 import {ObjectId} from "mongodb";
 
-function mapCommentToCommentViewModel (comment: CommentDbModel): commentViewModel {
+function mapCommentToCommentViewModel (comment: CommentDbModel, user: userAccountDbModel): commentViewModel {
+    const userId = user._id
+    const myStatus = comment.likingUsers.find(user => user.userId.toString() === userId.toString())!.myStatus
     return  {
         id: comment._id.toString(),
         content: comment.content,
@@ -17,11 +19,27 @@ function mapCommentToCommentViewModel (comment: CommentDbModel): commentViewMode
         likesInfo: {
             likesCount: comment.likesInfo.likesCount,
             dislikesCount:  comment.likesInfo.dislikesCount,
-            myStatus: 'None'
+            myStatus: myStatus
         }
     }
-
 }
+function mapCommentsToCommentViewModel (comment: CommentDbModel): commentViewModel {
+    return  {
+        id: comment._id.toString(),
+        content: comment.content,
+        commentatorInfo: {
+            userId: comment.commentatorInfo.userId,
+            userLogin: comment.commentatorInfo.userLogin
+        },
+        createdAt: comment.createdAt,
+        likesInfo: {
+            likesCount: comment.likesInfo.likesCount,
+            dislikesCount:  comment.likesInfo.dislikesCount,
+            myStatus: "None"
+        }
+    }
+}
+
 export class CommentsQueryRepository {
     async getAllCommentsForPost(query: paginationQuerys, postId: string): Promise<paginatedViewModel<commentViewModel[]>> {
 
@@ -37,7 +55,7 @@ export class CommentsQueryRepository {
             .limit(+pageSize)
             .lean()
 
-        const commentsView = commentsDb.map(mapCommentToCommentViewModel)
+        const commentsView = commentsDb.map(mapCommentsToCommentViewModel)
         return {
             pagesCount: Math.ceil(countAll / +pageSize),
             page: +pageNumber,
@@ -46,14 +64,14 @@ export class CommentsQueryRepository {
             items: commentsView
         }
     }
-    async findCommentById(commentId: string): Promise<commentViewModel | null> {
+    async findCommentById(commentId: string, user: userAccountDbModel): Promise<commentViewModel | null> {
 
         let _id = new ObjectId(commentId)
         let foundComment: CommentDbModel | null = await CommentModelClass.findOne({_id: _id})
         if (!foundComment) {
             return null
         }
-        return mapCommentToCommentViewModel(foundComment)
+        return mapCommentToCommentViewModel(foundComment, user)
     }
 }
 export const commentsQueryRepository = new CommentsQueryRepository()

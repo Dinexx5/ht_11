@@ -21,8 +21,8 @@ import {bearerAuthMiddleware} from "../middlewares/auth-middlewares";
 export const commentsRouter = Router({})
 
 class CommentsController {
-    async getComments (req: RequestWithParams<paramsIdModel>, res: Response){
-        const returnedComment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id)
+    async getComment (req: RequestWithParams<paramsIdModel>, res: Response){
+        const returnedComment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id, req.user!)
         if (!returnedComment) {
         return res.sendStatus(404)
         }
@@ -30,7 +30,7 @@ class CommentsController {
     }
 
     async updateComment (req: RequestWithParamsAndBody<paramsIdModel, createCommentInputModel>, res: Response) {
-        const comment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id)
+        const comment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id, req.user!)
         if (!comment) {
         return res.sendStatus(404)
         }
@@ -45,7 +45,7 @@ class CommentsController {
         return res.sendStatus(204)
     }
     async deleteComment (req: RequestWithParams<paramsIdModel>, res: Response)  {
-        const comment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id)
+        const comment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id, req.user!)
         if (!comment) {
         return res.sendStatus(404)
         }
@@ -61,17 +61,18 @@ class CommentsController {
     async likeComment (req: RequestWithParamsAndBody<paramsIdModel, likeInputModel>, res: Response) {
         const isLiked = await commentsService.likeComment(req.params.id, req.body.likeStatus, req.user!)
         if (!isLiked) {
-            res.sendStatus(404)
+            return res.sendStatus(404)
         }
-        res.sendStatus(204)
+        return res.sendStatus(204)
     }
 }
 
 export const commentsControllerInstance = new CommentsController()
 
 commentsRouter.get('/:id',
+    bearerAuthMiddleware,
     objectIdIsValidMiddleware,
-    commentsControllerInstance.getComments.bind(commentsControllerInstance)
+    commentsControllerInstance.getComment.bind(commentsControllerInstance)
 )
 
 commentsRouter.put('/:id',
