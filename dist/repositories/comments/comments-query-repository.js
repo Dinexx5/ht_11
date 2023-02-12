@@ -12,31 +12,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.commentsQueryRepository = exports.CommentsQueryRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
-function mapCommentToCommentViewModel(comment, user) {
+function mapCommentToViewModel(comment, user) {
     if (!user) {
-        return mapCommentToCommentViewModelWithAuth(comment);
+        return mapperToCommentViewModel(comment);
     }
     const userId = user._id;
-    const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
-    if (!isUser) {
-        return mapCommentToCommentViewModelWithAuth(comment);
+    const isUserLikedBefore = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
+    if (!isUserLikedBefore) {
+        return mapperToCommentViewModel(comment);
     }
-    const myStatus = isUser.myStatus;
-    return mapCommentToCommentViewModelWithAuth(comment, myStatus);
+    const myStatus = isUserLikedBefore.myStatus;
+    return mapperToCommentViewModel(comment, myStatus);
 }
-function mapCommentsToCommentViewModel(comment) {
+function mapCommentsToViewModel(comment) {
     if (!this || !this.user) {
-        return mapCommentToCommentViewModelWithAuth(comment);
+        return mapperToCommentViewModel(comment);
     }
     const userId = this.user._id;
-    const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
-    if (!isUser) {
-        return mapCommentToCommentViewModelWithAuth(comment);
+    const isUserLikedBefore = comment.likingUsers.find(user => user.userId.toString() === userId.toString());
+    if (!isUserLikedBefore) {
+        return mapperToCommentViewModel(comment);
     }
-    const myStatus = isUser.myStatus;
-    return mapCommentToCommentViewModelWithAuth(comment, myStatus);
+    const myStatus = isUserLikedBefore.myStatus;
+    return mapperToCommentViewModel(comment, myStatus);
 }
-function mapCommentToCommentViewModelWithAuth(comment, myStatus) {
+function mapperToCommentViewModel(comment, myStatus) {
     const filter = { myStatus: "None" };
     if (myStatus) {
         filter.myStatus = myStatus;
@@ -56,22 +56,6 @@ function mapCommentToCommentViewModelWithAuth(comment, myStatus) {
         }
     };
 }
-// function mapCommentToCommentViewModelNoAuth (comment: CommentDbModel): commentViewModel {
-//     return  {
-//         id: comment._id.toString(),
-//         content: comment.content,
-//         commentatorInfo: {
-//             userId: comment.commentatorInfo.userId,
-//             userLogin: comment.commentatorInfo.userLogin
-//         },
-//         createdAt: comment.createdAt,
-//         likesInfo: {
-//             likesCount: comment.likesInfo.likesCount,
-//             dislikesCount:  comment.likesInfo.dislikesCount,
-//             myStatus: "None"
-//         }
-//     }
-// }
 class CommentsQueryRepository {
     getAllCommentsForPost(query, postId, user) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -85,7 +69,7 @@ class CommentsQueryRepository {
                 .skip(skippedCommentsNumber)
                 .limit(+pageSize)
                 .lean();
-            const commentsView = commentsDb.map(mapCommentsToCommentViewModel, { user: user });
+            const commentsView = commentsDb.map(mapCommentsToViewModel, { user: user });
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
                 page: +pageNumber,
@@ -102,7 +86,7 @@ class CommentsQueryRepository {
             if (!foundComment) {
                 return null;
             }
-            return mapCommentToCommentViewModel(foundComment, user);
+            return mapCommentToViewModel(foundComment, user);
         });
     }
 }

@@ -74,15 +74,7 @@ class PostsController {
             if (!foundPost) {
                 return res.sendStatus(404);
             }
-            const user = req.user;
-            if (!user) {
-                const returnedComments = yield comments_query_repository_1.commentsQueryRepository.getAllCommentsForPost(req.query, req.params.id);
-                if (!returnedComments) {
-                    return res.sendStatus(404);
-                }
-                return res.send(returnedComments);
-            }
-            const returnedComments = yield comments_query_repository_1.commentsQueryRepository.getAllCommentsForPost(req.query, req.params.id, user);
+            const returnedComments = yield comments_query_repository_1.commentsQueryRepository.getAllCommentsForPost(req.query, req.params.id, req.user);
             return res.send(returnedComments);
         });
     }
@@ -94,4 +86,4 @@ exports.postsRouter.post('/', auth_middlewares_1.basicAuthMiddleware, input_vali
 exports.postsRouter.delete('/:id', auth_middlewares_1.basicAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, exports.postsControllerInstance.deletePost.bind(exports.postsControllerInstance));
 exports.postsRouter.put('/:id', auth_middlewares_1.basicAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, input_validation_1.titleValidation, input_validation_1.shortDescriptionValidation, input_validation_1.postContentValidation, input_validation_1.blogIdlValidation, input_validation_1.inputValidationMiddleware, exports.postsControllerInstance.updatePost.bind(exports.postsControllerInstance));
 exports.postsRouter.post('/:id/comments', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.commentContentValidation, input_validation_1.inputValidationMiddleware, exports.postsControllerInstance.createComment.bind(exports.postsControllerInstance));
-exports.postsRouter.get('/:id/comments', auth_middlewares_1.getCommentAuthMiddleware, exports.postsControllerInstance.getComments.bind(exports.postsControllerInstance));
+exports.postsRouter.get('/:id/comments', auth_middlewares_1.authUserForCommentsMiddleware, exports.postsControllerInstance.getComments.bind(exports.postsControllerInstance));

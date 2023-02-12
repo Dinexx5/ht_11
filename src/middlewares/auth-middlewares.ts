@@ -25,7 +25,7 @@ export const bearerAuthMiddleware = async (req:Request, res:Response, next: Next
     return res.status(401).send("user not found")
 }
 
-export const getCommentAuthMiddleware = async (req:Request, res:Response, next: NextFunction) => {
+export const authUserForCommentsMiddleware = async (req:Request, res:Response, next: NextFunction) => {
     if (!req.headers.authorization) {
         return next()
     }

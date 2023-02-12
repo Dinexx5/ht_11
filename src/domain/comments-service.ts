@@ -55,15 +55,12 @@ class CommentsService {
         }
         const userId = user._id
         const userLikedObject = commentInstance.likingUsers.find(user => user.userId.toString() === userId.toString())
-        console.log(userLikedObject)
         if(!userLikedObject) {
             commentInstance.likingUsers.push({userId: userId, myStatus: "None"})
             await commentInstance.save()
         }
         const indexOfUser = commentInstance.likingUsers.findIndex(user => user.userId.toString() === userId.toString())
-        console.log(indexOfUser)
         const myStatus = commentInstance.likingUsers.find(user => user.userId.toString() === userId.toString())!.myStatus
-        console.log(myStatus)
         switch (likeStatus) {
             case 'Like':
                 if (myStatus === "Like") {

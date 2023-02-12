@@ -15,22 +15,22 @@ import {
     inputValidationMiddleware, isLikeStatusCorrect,
     objectIdIsValidMiddleware
 } from "../middlewares/input-validation";
-import {bearerAuthMiddleware, getCommentAuthMiddleware} from "../middlewares/auth-middlewares";
+import {bearerAuthMiddleware, authUserForCommentsMiddleware} from "../middlewares/auth-middlewares";
 
 
 export const commentsRouter = Router({})
 
 class CommentsController {
     async getComment (req: RequestWithParams<paramsIdModel>, res: Response){
-        const user = req.user
-        if (!user) {
-           const returnedComment = await commentsQueryRepository.findCommentById(req.params.id)
-            if (!returnedComment) {
-                return res.sendStatus(404)
-            }
-            return res.send(returnedComment)
-        }
-        const returnedComment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id, req.user!)
+        // const user = req.user
+        // if (!user) {
+        //    const returnedComment = await commentsQueryRepository.findCommentById(req.params.id)
+        //     if (!returnedComment) {
+        //         return res.sendStatus(404)
+        //     }
+        //     return res.send(returnedComment)
+        // }
+        const returnedComment: commentViewModel | null = await commentsQueryRepository.findCommentById(req.params.id, req.user)
         if (!returnedComment) {
         return res.sendStatus(404)
         }
@@ -78,7 +78,7 @@ class CommentsController {
 export const commentsControllerInstance = new CommentsController()
 
 commentsRouter.get('/:id',
-    getCommentAuthMiddleware,
+    authUserForCommentsMiddleware,
     objectIdIsValidMiddleware,
     commentsControllerInstance.getComment.bind(commentsControllerInstance)
 )

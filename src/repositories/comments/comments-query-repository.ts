@@ -5,33 +5,33 @@ import {
 import {CommentModelClass} from "../db";
 import {ObjectId} from "mongodb";
 
-function mapCommentToCommentViewModel (comment: CommentDbModel, user?: userAccountDbModel): commentViewModel {
+function mapCommentToViewModel (comment: CommentDbModel, user?: userAccountDbModel | null): commentViewModel {
     if (!user) {
-        return mapCommentToCommentViewModelWithAuth(comment)
+        return mapperToCommentViewModel(comment)
     }
     const userId = user._id
-    const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString())!
-    if (!isUser) {
-        return mapCommentToCommentViewModelWithAuth(comment)
+    const isUserLikedBefore = comment.likingUsers.find(user => user.userId.toString() === userId.toString())!
+    if (!isUserLikedBefore) {
+        return mapperToCommentViewModel(comment)
     }
-    const myStatus = isUser.myStatus
-    return  mapCommentToCommentViewModelWithAuth(comment, myStatus)
+    const myStatus = isUserLikedBefore.myStatus
+    return  mapperToCommentViewModel(comment, myStatus)
 }
 
-function mapCommentsToCommentViewModel (this:any, comment: CommentDbModel): commentViewModel {
+function mapCommentsToViewModel (this:any, comment: CommentDbModel): commentViewModel {
     if (!this || !this.user) {
-        return mapCommentToCommentViewModelWithAuth(comment)
+        return mapperToCommentViewModel(comment)
     }
-    const userId: userAccountDbModel = this.user._id
-    const isUser = comment.likingUsers.find(user => user.userId.toString() === userId.toString())!
-    if (!isUser) {
-        return mapCommentToCommentViewModelWithAuth(comment)
+    const userId = this.user._id
+    const isUserLikedBefore = comment.likingUsers.find(user => user.userId.toString() === userId.toString())!
+    if (!isUserLikedBefore) {
+        return mapperToCommentViewModel(comment)
     }
-    const myStatus = isUser.myStatus
-    return  mapCommentToCommentViewModelWithAuth(comment, myStatus)
+    const myStatus = isUserLikedBefore.myStatus
+    return  mapperToCommentViewModel(comment, myStatus)
 }
 
-function mapCommentToCommentViewModelWithAuth (comment: CommentDbModel, myStatus?: string): commentViewModel {
+function mapperToCommentViewModel (comment: CommentDbModel, myStatus?: string): commentViewModel {
     const filter = {myStatus: "None"}
     if (myStatus) {
         filter.myStatus = myStatus
@@ -51,25 +51,9 @@ function mapCommentToCommentViewModelWithAuth (comment: CommentDbModel, myStatus
         }
     }
 }
-// function mapCommentToCommentViewModelNoAuth (comment: CommentDbModel): commentViewModel {
-//     return  {
-//         id: comment._id.toString(),
-//         content: comment.content,
-//         commentatorInfo: {
-//             userId: comment.commentatorInfo.userId,
-//             userLogin: comment.commentatorInfo.userLogin
-//         },
-//         createdAt: comment.createdAt,
-//         likesInfo: {
-//             likesCount: comment.likesInfo.likesCount,
-//             dislikesCount:  comment.likesInfo.dislikesCount,
-//             myStatus: "None"
-//         }
-//     }
-// }
 
 export class CommentsQueryRepository {
-    async getAllCommentsForPost(query: paginationQuerys, postId: string, user?: userAccountDbModel): Promise<paginatedViewModel<commentViewModel[]>> {
+    async getAllCommentsForPost(query: paginationQuerys, postId: string, user?: userAccountDbModel | null): Promise<paginatedViewModel<commentViewModel[]>> {
 
         const {sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10} = query
         const sortDirectionNumber: 1 | -1 = sortDirection === "desc" ? -1 : 1;
@@ -83,7 +67,7 @@ export class CommentsQueryRepository {
             .limit(+pageSize)
             .lean()
 
-        const commentsView = commentsDb.map(mapCommentsToCommentViewModel, {user: user})
+        const commentsView = commentsDb.map(mapCommentsToViewModel, {user: user})
         return {
             pagesCount: Math.ceil(countAll / +pageSize),
             page: +pageNumber,
@@ -93,14 +77,14 @@ export class CommentsQueryRepository {
         }
     }
 
-    async findCommentById(commentId: string, user?: userAccountDbModel): Promise<commentViewModel | null> {
+    async findCommentById(commentId: string, user?: userAccountDbModel | null): Promise<commentViewModel | null> {
 
         let _id = new ObjectId(commentId)
         let foundComment: CommentDbModel | null = await CommentModelClass.findOne({_id: _id})
         if (!foundComment) {
             return null
         }
-        return mapCommentToCommentViewModel(foundComment, user)
+        return mapCommentToViewModel(foundComment, user)
     }
 }
 export const commentsQueryRepository = new CommentsQueryRepository()
