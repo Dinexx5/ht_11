@@ -79,7 +79,7 @@ class PostsQueryRepository {
                 .skip(skippedPostsNumber)
                 .limit(+pageSize)
                 .lean();
-            const postsView = postsDb.map(mapPostsToViewModel, { user: user });
+            const postsView = postsDb.map(mapPostsToViewModel, { user: user }).reverse();
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
                 page: +pageNumber,
