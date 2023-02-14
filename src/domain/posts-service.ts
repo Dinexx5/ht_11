@@ -65,17 +65,17 @@ export class PostsService {
         }
         const userId = user._id
         const login = user.accountData.login
-        const callback = (user: likingUserModel) => user.userId.toString() === userId.toString()
+        const callbackFindIndex = (user: likingUserModel) => user.userId.toString() === userId.toString()
         if (likeStatus === "Like") {
 
         }
-        const isUserLikedBefore = postInstance.likingUsers.find(callback)
+        const isUserLikedBefore = postInstance.likingUsers.find(callbackFindIndex)
         if(!isUserLikedBefore) {
             postInstance.likingUsers.push({userId: userId, myStatus: "None"})
             await postInstance.save()
         }
-        const indexOfUser = postInstance.likingUsers.findIndex(callback)
-        const myStatus = postInstance.likingUsers.find(callback)!.myStatus
+        const indexOfUser = postInstance.likingUsers.findIndex(callbackFindIndex)
+        const myStatus = postInstance.likingUsers.find(callbackFindIndex)!.myStatus
         switch (likeStatus) {
             case 'Like':
                 if (myStatus === "Like") {
