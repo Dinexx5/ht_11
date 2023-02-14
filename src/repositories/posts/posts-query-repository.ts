@@ -37,6 +37,7 @@ function mapperToPostViewModel (post: PostDbModel, myStatus?: string): postViewM
     if (myStatus) {
         filter.myStatus = myStatus
     }
+    console.log(post)
     return  {
         id: post._id.toString(),
         title: post.title,
@@ -48,8 +49,12 @@ function mapperToPostViewModel (post: PostDbModel, myStatus?: string): postViewM
         extendedLikesInfo: {
             likesCount: post.extendedLikesInfo.likesCount,
             dislikesCount: post.extendedLikesInfo.dislikesCount,
-            myStatus: "None",
-            newestLikes: post.likes.slice(-3)
+            myStatus: filter.myStatus,
+            newestLikes: post.likes.slice(-3).map(like => ({
+                addedAt: like.addedAt,
+                userId: like.userId,
+                login: like.login
+            })).reverse()
         }
     }
 }
