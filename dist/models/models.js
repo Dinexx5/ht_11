@@ -12,7 +12,7 @@ class BlogDbModel {
 }
 exports.BlogDbModel = BlogDbModel;
 class PostDbModel {
-    constructor(_id, title, shortDescription, content, blogId, blogName, createdAt) {
+    constructor(_id, title, shortDescription, content, blogId, blogName, createdAt, likingUsers, likes, extendedLikesInfo) {
         this._id = _id;
         this.title = title;
         this.shortDescription = shortDescription;
@@ -20,6 +20,9 @@ class PostDbModel {
         this.blogId = blogId;
         this.blogName = blogName;
         this.createdAt = createdAt;
+        this.likingUsers = likingUsers;
+        this.likes = likes;
+        this.extendedLikesInfo = extendedLikesInfo;
     }
 }
 exports.PostDbModel = PostDbModel;

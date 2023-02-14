@@ -23,7 +23,7 @@ import {
     updateBlogInputModel,
     createPostInputModel, paginatedViewModel
 } from "../models/models";
-import {basicAuthMiddleware} from "../middlewares/auth-middlewares";
+import {authUserToGetLikeStatus, basicAuthMiddleware} from "../middlewares/auth-middlewares";
 
 export const blogsRouter = Router({})
 
@@ -74,7 +74,7 @@ class BlogsController {
     }
 
     async getPosts(req: RequestWithParamsAndQuery<paramsIdModel, paginationQuerys>, res: Response) {
-        const foundPosts: paginatedViewModel<postViewModel[]> = await postsQueryRepository.getAllPosts(req.query, req.params.id)
+        const foundPosts: paginatedViewModel<postViewModel[]> = await postsQueryRepository.getAllPosts(req.query, req.params.id, req.user)
         res.send(foundPosts)
     }
 }
@@ -88,6 +88,7 @@ blogsRouter.get('/:id',
     blogsControllerInstance.getBlog.bind(blogsControllerInstance))
 
 blogsRouter.get('/:id/posts',
+    authUserToGetLikeStatus,
     objectIdIsValidMiddleware,
     blogIdParamsValidation,
     blogsControllerInstance.getPosts.bind(blogsControllerInstance))

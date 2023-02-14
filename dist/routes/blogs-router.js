@@ -71,7 +71,7 @@ class BlogsController {
     }
     getPosts(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const foundPosts = yield posts_query_repository_1.postsQueryRepository.getAllPosts(req.query, req.params.id);
+            const foundPosts = yield posts_query_repository_1.postsQueryRepository.getAllPosts(req.query, req.params.id, req.user);
             res.send(foundPosts);
         });
     }
@@ -79,7 +79,7 @@ class BlogsController {
 exports.blogsControllerInstance = new BlogsController();
 exports.blogsRouter.get('/', exports.blogsControllerInstance.getBlogs.bind(exports.blogsControllerInstance));
 exports.blogsRouter.get('/:id', input_validation_1.objectIdIsValidMiddleware, exports.blogsControllerInstance.getBlog.bind(exports.blogsControllerInstance));
-exports.blogsRouter.get('/:id/posts', input_validation_1.objectIdIsValidMiddleware, input_validation_1.blogIdParamsValidation, exports.blogsControllerInstance.getPosts.bind(exports.blogsControllerInstance));
+exports.blogsRouter.get('/:id/posts', auth_middlewares_1.authUserToGetLikeStatus, input_validation_1.objectIdIsValidMiddleware, input_validation_1.blogIdParamsValidation, exports.blogsControllerInstance.getPosts.bind(exports.blogsControllerInstance));
 exports.blogsRouter.post('/:id/posts', auth_middlewares_1.basicAuthMiddleware, input_validation_1.titleValidation, input_validation_1.shortDescriptionValidation, input_validation_1.postContentValidation, input_validation_1.inputValidationMiddleware, input_validation_1.blogIdParamsValidation, exports.blogsControllerInstance.createPost.bind(exports.blogsControllerInstance));
 exports.blogsRouter.post('/', auth_middlewares_1.basicAuthMiddleware, input_validation_1.nameValidation, input_validation_1.descriptionValidation, input_validation_1.websiteUrlValidation, input_validation_1.inputValidationMiddleware, exports.blogsControllerInstance.createBlog.bind(exports.blogsControllerInstance));
 exports.blogsRouter.delete('/:id', auth_middlewares_1.basicAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, exports.blogsControllerInstance.deleteBlog.bind(exports.blogsControllerInstance));

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkRefreshTokenMiddleware = exports.authUserForCommentsMiddleware = exports.bearerAuthMiddleware = exports.basicAuthMiddleware = void 0;
+exports.checkRefreshTokenMiddleware = exports.authUserToGetLikeStatus = exports.bearerAuthMiddleware = exports.basicAuthMiddleware = void 0;
 const jwt_service_1 = require("../application/jwt-service");
 const users_service_1 = require("../domain/users-service");
 const basicAuthMiddleware = (req, res, next) => {
@@ -36,7 +36,7 @@ const bearerAuthMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 
     return res.status(401).send("user not found");
 });
 exports.bearerAuthMiddleware = bearerAuthMiddleware;
-const authUserForCommentsMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const authUserToGetLikeStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.headers.authorization) {
         return next();
     }
@@ -49,7 +49,7 @@ const authUserForCommentsMiddleware = (req, res, next) => __awaiter(void 0, void
     }
     return res.status(401).send("user not found");
 });
-exports.authUserForCommentsMiddleware = authUserForCommentsMiddleware;
+exports.authUserToGetLikeStatus = authUserToGetLikeStatus;
 const checkRefreshTokenMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;
     if (!req.cookies.refreshToken) {

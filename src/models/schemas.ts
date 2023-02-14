@@ -24,7 +24,13 @@ export const postSchema = new mongoose.Schema<PostDbModel>({
     content: { type: String, required: true },
     blogId: { type: String, required: true },
     blogName: String,
-    createdAt: String
+    createdAt: String,
+    likingUsers: [{userId: Schema.Types.ObjectId, myStatus: String}],
+    likes: [{addedAt: String, userId: String, login: String}],
+    extendedLikesInfo: {
+        likesCount: Number,
+        dislikesCount: Number,
+    }
 });
 
 export const emailConfirmationSchema = new mongoose.Schema<emailConfirmation>({

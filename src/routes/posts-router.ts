@@ -1,8 +1,9 @@
 import {Response, Router} from "express"
 
-import {blogIdlValidation, commentContentValidation, postContentValidation,
+import {
+    blogIdlValidation, commentContentValidation, postContentValidation,
     inputValidationMiddleware, objectIdIsValidMiddleware,
-    shortDescriptionValidation, titleValidation
+    shortDescriptionValidation, titleValidation, isLikeStatusCorrect
 } from "../middlewares/input-validation";
 
 import {postsService} from "../domain/posts-service";
@@ -22,11 +23,11 @@ import {
     updatePostInputModel,
     createPostInputModelWithBlogId,
     paginationQuerys,
-    paginatedViewModel
+    paginatedViewModel, likeInputModel
 } from "../models/models";
 import {commentsService} from "../domain/comments-service";
 import {commentsQueryRepository} from "../repositories/comments/comments-query-repository";
-import {basicAuthMiddleware, bearerAuthMiddleware, authUserForCommentsMiddleware} from "../middlewares/auth-middlewares";
+import {basicAuthMiddleware, bearerAuthMiddleware, authUserToGetLikeStatus} from "../middlewares/auth-middlewares";
 
 
 export const postsRouter = Router({})
@@ -35,12 +36,12 @@ export const postsRouter = Router({})
 class PostsController {
 
     async getPosts (req: RequestWithQuery<paginationQuerys>, res: Response<paginatedViewModel<postViewModel[]>>) {
-        const returnedPosts: paginatedViewModel<postViewModel[]> = await postsQueryRepository.getAllPosts(req.query)
+        const returnedPosts: paginatedViewModel<postViewModel[]> = await postsQueryRepository.getAllPosts(req.query, undefined, req.user)
         return res.status(200).send(returnedPosts)
     }
 
     async getPost (req: RequestWithParams<paramsIdModel>, res: Response){
-        let foundPost: postViewModel | null = await postsQueryRepository.findPostById(req.params.id)
+        let foundPost: postViewModel | null = await postsQueryRepository.findPostById(req.params.id, req.user)
         if (!foundPost) {
         return res.sendStatus(404)
         }
@@ -85,13 +86,23 @@ class PostsController {
         const returnedComments: paginatedViewModel<commentViewModel[]> = await commentsQueryRepository.getAllCommentsForPost(req.query, req.params.id, req.user)
         return res.send(returnedComments)
     }
+    async likePost (req: RequestWithParamsAndBody<paramsIdModel, likeInputModel>, res: Response) {
+        const isLiked = await postsService.likePost(req.params.id, req.body.likeStatus, req.user!)
+        if (!isLiked) {
+            return res.sendStatus(404)
+        }
+        return res.sendStatus(204)
+    }
 }
 
 export const postsControllerInstance = new PostsController()
 
-postsRouter.get('/',postsControllerInstance.getPosts.bind(postsControllerInstance))
+postsRouter.get('/',
+    authUserToGetLikeStatus,
+    postsControllerInstance.getPosts.bind(postsControllerInstance))
 
 postsRouter.get('/:id',
+    authUserToGetLikeStatus,
     objectIdIsValidMiddleware,
     postsControllerInstance.getPost.bind(postsControllerInstance)
 )
@@ -131,6 +142,14 @@ postsRouter.post('/:id/comments',
 )
 
 postsRouter.get('/:id/comments',
-    authUserForCommentsMiddleware,
+    authUserToGetLikeStatus,
     postsControllerInstance.getComments.bind(postsControllerInstance)
+)
+
+postsRouter.put('/:id/like-status',
+    bearerAuthMiddleware,
+    objectIdIsValidMiddleware,
+    isLikeStatusCorrect,
+    inputValidationMiddleware,
+    postsControllerInstance.likePost.bind(postsControllerInstance)
 )

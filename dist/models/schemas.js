@@ -39,7 +39,13 @@ exports.postSchema = new mongoose_1.default.Schema({
     content: { type: String, required: true },
     blogId: { type: String, required: true },
     blogName: String,
-    createdAt: String
+    createdAt: String,
+    likingUsers: [{ userId: mongoose_1.Schema.Types.ObjectId, myStatus: String }],
+    likes: [{ addedAt: String, userId: String, login: String }],
+    extendedLikesInfo: {
+        likesCount: Number,
+        dislikesCount: Number,
+    }
 });
 exports.emailConfirmationSchema = new mongoose_1.default.Schema({
     confirmationCode: String,

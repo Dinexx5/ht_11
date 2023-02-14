@@ -1,11 +1,12 @@
 import {PostsRepository} from "../repositories/posts/posts-repository-db";
 import {
-    createPostInputModelWithBlogId, PostDbModel,
+    createPostInputModelWithBlogId, likingUserModel, PostDbModel,
     postViewModel,
-    updatePostInputModel
+    updatePostInputModel, userAccountDbModel
 } from "../models/models";
 import {ObjectId} from "mongodb";
 import {blogsQueryRepository} from "../repositories/blogs/blogs-query-repository";
+import {PostModelClass} from "../repositories/db";
 
 export class PostsService {
     private postsRepository: PostsRepository;
@@ -22,7 +23,13 @@ export class PostsService {
             content,
             blogId,
             foundBlog!.name,
-            foundBlog!.createdAt
+            foundBlog!.createdAt,
+            [],
+            [],
+            {
+                likesCount: 0,
+                dislikesCount: 0,
+            },
         )
         await this.postsRepository.createPost(newDbPost)
         return {
@@ -32,7 +39,13 @@ export class PostsService {
             content: content,
             blogId: blogId,
             blogName: foundBlog!.name,
-            createdAt: foundBlog!.createdAt
+            createdAt: foundBlog!.createdAt,
+            extendedLikesInfo: {
+                likesCount: newDbPost.extendedLikesInfo.likesCount,
+                dislikesCount: newDbPost.extendedLikesInfo.dislikesCount,
+                myStatus: "None",
+                newestLikes: []
+            }
         }
     }
 
@@ -42,6 +55,76 @@ export class PostsService {
 
     async UpdatePostById(postId: string, postBody: updatePostInputModel): Promise<boolean> {
         return await this.postsRepository.UpdatePostById(postId, postBody)
+    }
+
+    async likePost(postId: string, likeStatus: string, user: userAccountDbModel): Promise<boolean> {
+        const _id = new ObjectId(postId)
+        const postInstance = await PostModelClass.findOne({_id})
+        if (!postInstance) {
+            return false
+        }
+        const userId = user._id
+        const login = user.accountData.login
+        const callback = (user: likingUserModel) => user.userId.toString() === userId.toString()
+        if (likeStatus === "Like") {
+
+        }
+        const isUserLikedBefore = postInstance.likingUsers.find(callback)
+        if(!isUserLikedBefore) {
+            postInstance.likingUsers.push({userId: userId, myStatus: "None"})
+            await postInstance.save()
+        }
+        const indexOfUser = postInstance.likingUsers.findIndex(callback)
+        const myStatus = postInstance.likingUsers.find(callback)!.myStatus
+        switch (likeStatus) {
+            case 'Like':
+                if (myStatus === "Like") {
+                    postInstance.likingUsers[indexOfUser].myStatus = "Like"
+                }
+                if (myStatus === "None") {
+                    ++postInstance!.extendedLikesInfo.likesCount
+                    postInstance.likingUsers[indexOfUser].myStatus = "Like"
+                    postInstance.likes.push({addedAt: new Date().toISOString(), userId: userId.toString(), login: login})
+                }
+                if (myStatus === "Dislike") {
+                    --postInstance!.extendedLikesInfo.dislikesCount
+                    ++postInstance!.extendedLikesInfo.likesCount
+                    postInstance.likingUsers[indexOfUser].myStatus = "Like"
+                    postInstance.likes.push({addedAt: new Date().toISOString(), userId: userId.toString(), login: login})
+                }
+                break;
+            case 'Dislike':
+                if (myStatus === "Like") {
+                    --postInstance!.extendedLikesInfo.likesCount
+                    ++postInstance!.extendedLikesInfo.dislikesCount
+                    postInstance.likingUsers[indexOfUser].myStatus = "Dislike"
+                    postInstance.likes.filter(user => user.userId !== userId.toString())
+                }
+                if (myStatus === "None") {
+                    ++postInstance!.extendedLikesInfo.dislikesCount
+                    postInstance.likingUsers[indexOfUser].myStatus = "Dislike"
+                }
+                if (myStatus === "Dislike") {
+                    postInstance.likingUsers[indexOfUser].myStatus = "Dislike"
+                }
+                break;
+            case 'None':
+                if (myStatus === "Like") {
+                    --postInstance!.extendedLikesInfo.likesCount
+                    postInstance.likingUsers[indexOfUser].myStatus = "None"
+                    postInstance.likes.filter(user => user.userId !== userId.toString())
+                }
+                if (myStatus === "Dislike") {
+                    --postInstance!.extendedLikesInfo.dislikesCount
+                    postInstance.likingUsers[indexOfUser].myStatus = "None"
+                }
+                if (myStatus === "None") {
+                    postInstance.likingUsers[indexOfUser].myStatus = "None"
+                }
+                break;
+        }
+        await postInstance.save()
+        return true
     }
 }
 export const postsService = new PostsService()

@@ -21,13 +21,13 @@ exports.postsRouter = (0, express_1.Router)({});
 class PostsController {
     getPosts(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const returnedPosts = yield posts_query_repository_1.postsQueryRepository.getAllPosts(req.query);
+            const returnedPosts = yield posts_query_repository_1.postsQueryRepository.getAllPosts(req.query, undefined, req.user);
             return res.status(200).send(returnedPosts);
         });
     }
     getPost(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            let foundPost = yield posts_query_repository_1.postsQueryRepository.findPostById(req.params.id);
+            let foundPost = yield posts_query_repository_1.postsQueryRepository.findPostById(req.params.id, req.user);
             if (!foundPost) {
                 return res.sendStatus(404);
             }
@@ -78,12 +78,22 @@ class PostsController {
             return res.send(returnedComments);
         });
     }
+    likePost(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const isLiked = yield posts_service_1.postsService.likePost(req.params.id, req.body.likeStatus, req.user);
+            if (!isLiked) {
+                return res.sendStatus(404);
+            }
+            return res.sendStatus(204);
+        });
+    }
 }
 exports.postsControllerInstance = new PostsController();
-exports.postsRouter.get('/', exports.postsControllerInstance.getPosts.bind(exports.postsControllerInstance));
-exports.postsRouter.get('/:id', input_validation_1.objectIdIsValidMiddleware, exports.postsControllerInstance.getPost.bind(exports.postsControllerInstance));
+exports.postsRouter.get('/', auth_middlewares_1.authUserToGetLikeStatus, exports.postsControllerInstance.getPosts.bind(exports.postsControllerInstance));
+exports.postsRouter.get('/:id', auth_middlewares_1.authUserToGetLikeStatus, input_validation_1.objectIdIsValidMiddleware, exports.postsControllerInstance.getPost.bind(exports.postsControllerInstance));
 exports.postsRouter.post('/', auth_middlewares_1.basicAuthMiddleware, input_validation_1.titleValidation, input_validation_1.shortDescriptionValidation, input_validation_1.postContentValidation, input_validation_1.blogIdlValidation, input_validation_1.inputValidationMiddleware, exports.postsControllerInstance.createPost.bind(exports.postsControllerInstance));
 exports.postsRouter.delete('/:id', auth_middlewares_1.basicAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, exports.postsControllerInstance.deletePost.bind(exports.postsControllerInstance));
 exports.postsRouter.put('/:id', auth_middlewares_1.basicAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, input_validation_1.titleValidation, input_validation_1.shortDescriptionValidation, input_validation_1.postContentValidation, input_validation_1.blogIdlValidation, input_validation_1.inputValidationMiddleware, exports.postsControllerInstance.updatePost.bind(exports.postsControllerInstance));
 exports.postsRouter.post('/:id/comments', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.commentContentValidation, input_validation_1.inputValidationMiddleware, exports.postsControllerInstance.createComment.bind(exports.postsControllerInstance));
-exports.postsRouter.get('/:id/comments', auth_middlewares_1.authUserForCommentsMiddleware, exports.postsControllerInstance.getComments.bind(exports.postsControllerInstance));
+exports.postsRouter.get('/:id/comments', auth_middlewares_1.authUserToGetLikeStatus, exports.postsControllerInstance.getComments.bind(exports.postsControllerInstance));
+exports.postsRouter.put('/:id/like-status', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, input_validation_1.isLikeStatusCorrect, input_validation_1.inputValidationMiddleware, exports.postsControllerInstance.likePost.bind(exports.postsControllerInstance));

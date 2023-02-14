@@ -14,6 +14,7 @@ const posts_repository_db_1 = require("../repositories/posts/posts-repository-db
 const models_1 = require("../models/models");
 const mongodb_1 = require("mongodb");
 const blogs_query_repository_1 = require("../repositories/blogs/blogs-query-repository");
+const db_1 = require("../repositories/db");
 class PostsService {
     constructor() {
         this.postsRepository = new posts_repository_db_1.PostsRepository();
@@ -22,7 +23,10 @@ class PostsService {
         return __awaiter(this, void 0, void 0, function* () {
             const { title, shortDescription, content, blogId } = postBody;
             let foundBlog = yield blogs_query_repository_1.blogsQueryRepository.findBlogById(blogId);
-            const newDbPost = new models_1.PostDbModel(new mongodb_1.ObjectId(), title, shortDescription, content, blogId, foundBlog.name, foundBlog.createdAt);
+            const newDbPost = new models_1.PostDbModel(new mongodb_1.ObjectId(), title, shortDescription, content, blogId, foundBlog.name, foundBlog.createdAt, [], [], {
+                likesCount: 0,
+                dislikesCount: 0,
+            });
             yield this.postsRepository.createPost(newDbPost);
             return {
                 id: newDbPost._id.toString(),
@@ -31,7 +35,13 @@ class PostsService {
                 content: content,
                 blogId: blogId,
                 blogName: foundBlog.name,
-                createdAt: foundBlog.createdAt
+                createdAt: foundBlog.createdAt,
+                extendedLikesInfo: {
+                    likesCount: newDbPost.extendedLikesInfo.likesCount,
+                    dislikesCount: newDbPost.extendedLikesInfo.dislikesCount,
+                    myStatus: "None",
+                    newestLikes: []
+                }
             };
         });
     }
@@ -43,6 +53,76 @@ class PostsService {
     UpdatePostById(postId, postBody) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.postsRepository.UpdatePostById(postId, postBody);
+        });
+    }
+    likePost(postId, likeStatus, user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const _id = new mongodb_1.ObjectId(postId);
+            const postInstance = yield db_1.PostModelClass.findOne({ _id });
+            if (!postInstance) {
+                return false;
+            }
+            const userId = user._id;
+            const login = user.accountData.login;
+            const callback = (user) => user.userId.toString() === userId.toString();
+            if (likeStatus === "Like") {
+            }
+            const isUserLikedBefore = postInstance.likingUsers.find(callback);
+            if (!isUserLikedBefore) {
+                postInstance.likingUsers.push({ userId: userId, myStatus: "None" });
+                yield postInstance.save();
+            }
+            const indexOfUser = postInstance.likingUsers.findIndex(callback);
+            const myStatus = postInstance.likingUsers.find(callback).myStatus;
+            switch (likeStatus) {
+                case 'Like':
+                    if (myStatus === "Like") {
+                        postInstance.likingUsers[indexOfUser].myStatus = "Like";
+                    }
+                    if (myStatus === "None") {
+                        ++postInstance.extendedLikesInfo.likesCount;
+                        postInstance.likingUsers[indexOfUser].myStatus = "Like";
+                        postInstance.likes.push({ addedAt: new Date().toISOString(), userId: userId.toString(), login: login });
+                    }
+                    if (myStatus === "Dislike") {
+                        --postInstance.extendedLikesInfo.dislikesCount;
+                        ++postInstance.extendedLikesInfo.likesCount;
+                        postInstance.likingUsers[indexOfUser].myStatus = "Like";
+                        postInstance.likes.push({ addedAt: new Date().toISOString(), userId: userId.toString(), login: login });
+                    }
+                    break;
+                case 'Dislike':
+                    if (myStatus === "Like") {
+                        --postInstance.extendedLikesInfo.likesCount;
+                        ++postInstance.extendedLikesInfo.dislikesCount;
+                        postInstance.likingUsers[indexOfUser].myStatus = "Dislike";
+                        postInstance.likes.filter(user => user.userId !== userId.toString());
+                    }
+                    if (myStatus === "None") {
+                        ++postInstance.extendedLikesInfo.dislikesCount;
+                        postInstance.likingUsers[indexOfUser].myStatus = "Dislike";
+                    }
+                    if (myStatus === "Dislike") {
+                        postInstance.likingUsers[indexOfUser].myStatus = "Dislike";
+                    }
+                    break;
+                case 'None':
+                    if (myStatus === "Like") {
+                        --postInstance.extendedLikesInfo.likesCount;
+                        postInstance.likingUsers[indexOfUser].myStatus = "None";
+                        postInstance.likes.filter(user => user.userId !== userId.toString());
+                    }
+                    if (myStatus === "Dislike") {
+                        --postInstance.extendedLikesInfo.dislikesCount;
+                        postInstance.likingUsers[indexOfUser].myStatus = "None";
+                    }
+                    if (myStatus === "None") {
+                        postInstance.likingUsers[indexOfUser].myStatus = "None";
+                    }
+                    break;
+            }
+            yield postInstance.save();
+            return true;
         });
     }
 }

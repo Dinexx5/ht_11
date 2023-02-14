@@ -47,6 +47,12 @@ export type postViewModel = {
     blogId: string
     blogName: string
     createdAt: string
+    extendedLikesInfo: {
+        likesCount: number,
+        dislikesCount: number,
+        myStatus: string
+        newestLikes: likeModel[]
+    }
 }
 
 export class BlogDbModel {
@@ -68,7 +74,32 @@ export class PostDbModel {
         public content: string,
         public blogId: string,
         public blogName: string,
-        public createdAt: string
+        public createdAt: string,
+        public likingUsers: likingUserModel[],
+        public likes: likeModel[],
+        public extendedLikesInfo: {
+            likesCount: number,
+            dislikesCount: number,
+        }
+    ) {
+    }
+}
+
+export class CommentDbModel {
+    constructor(
+        public _id: ObjectId,
+        public content: string,
+        public createdAt: string,
+        public commentatorInfo: {
+            userId: string,
+            userLogin: string
+        },
+        public likingUsers: likingUserModel[],
+        public postId: string,
+        public likesInfo: {
+            likesCount: number,
+            dislikesCount: number,
+        }
     ) {
     }
 }
@@ -174,25 +205,6 @@ export type commentViewModel = {
     }
 }
 
-export class CommentDbModel {
-    constructor(
-        public _id: ObjectId,
-        public content: string,
-        public createdAt: string,
-        public commentatorInfo: {
-            userId: string,
-            userLogin: string
-        },
-        public likingUsers: {userId: ObjectId, myStatus: string}[],
-        public postId: string,
-        public likesInfo: {
-            likesCount: number,
-            dislikesCount: number,
-        }
-    ) {
-    }
-}
-
 export type paginationQuerys = {
     sortDirection: string
     sortBy: string
@@ -221,7 +233,8 @@ export class DeviceDbModel {
         public title: string,
         public lastActiveDate: string,
         public deviceId: string
-    ) { }
+    ) {
+    }
 }
 
 export type deviceViewModel = {
@@ -241,4 +254,9 @@ export type likeInputModel = {
 export type likingUserModel = {
     userId: ObjectId,
     myStatus: string
+}
+export type likeModel = {
+    addedAt: string,
+    userId: string,
+    login: string
 }

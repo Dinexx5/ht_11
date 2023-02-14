@@ -15,7 +15,7 @@ import {
     inputValidationMiddleware, isLikeStatusCorrect,
     objectIdIsValidMiddleware
 } from "../middlewares/input-validation";
-import {bearerAuthMiddleware, authUserForCommentsMiddleware} from "../middlewares/auth-middlewares";
+import {bearerAuthMiddleware, authUserToGetLikeStatus} from "../middlewares/auth-middlewares";
 
 
 export const commentsRouter = Router({})
@@ -70,7 +70,7 @@ class CommentsController {
 export const commentsControllerInstance = new CommentsController()
 
 commentsRouter.get('/:id',
-    authUserForCommentsMiddleware,
+    authUserToGetLikeStatus,
     objectIdIsValidMiddleware,
     commentsControllerInstance.getComment.bind(commentsControllerInstance)
 )

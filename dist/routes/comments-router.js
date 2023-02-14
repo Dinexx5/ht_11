@@ -69,7 +69,7 @@ class CommentsController {
     }
 }
 exports.commentsControllerInstance = new CommentsController();
-exports.commentsRouter.get('/:id', auth_middlewares_1.authUserForCommentsMiddleware, input_validation_1.objectIdIsValidMiddleware, exports.commentsControllerInstance.getComment.bind(exports.commentsControllerInstance));
+exports.commentsRouter.get('/:id', auth_middlewares_1.authUserToGetLikeStatus, input_validation_1.objectIdIsValidMiddleware, exports.commentsControllerInstance.getComment.bind(exports.commentsControllerInstance));
 exports.commentsRouter.put('/:id', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, input_validation_1.commentContentValidation, input_validation_1.inputValidationMiddleware, exports.commentsControllerInstance.updateComment.bind(exports.commentsControllerInstance));
 exports.commentsRouter.delete('/:id', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, exports.commentsControllerInstance.deleteComment.bind(exports.commentsControllerInstance));
 exports.commentsRouter.put('/:id/like-status', auth_middlewares_1.bearerAuthMiddleware, input_validation_1.objectIdIsValidMiddleware, input_validation_1.isLikeStatusCorrect, input_validation_1.inputValidationMiddleware, exports.commentsControllerInstance.likeComment.bind(exports.commentsControllerInstance));

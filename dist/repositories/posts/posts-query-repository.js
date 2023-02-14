@@ -12,7 +12,35 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.postsQueryRepository = exports.PostsQueryRepository = void 0;
 const db_1 = require("../db");
 const mongodb_1 = require("mongodb");
-function postsMapperToPostType(post) {
+function mapPostToViewModel(post, user) {
+    if (!user) {
+        return mapperToPostViewModel(post);
+    }
+    const userId = user._id;
+    const isUserLikedBefore = post.likingUsers.find(user => user.userId.toString() === userId.toString());
+    if (!isUserLikedBefore) {
+        return mapperToPostViewModel(post);
+    }
+    const myStatus = isUserLikedBefore.myStatus;
+    return mapperToPostViewModel(post, myStatus);
+}
+function mapPostsToViewModel(post) {
+    if (!this || !this.user) {
+        return mapperToPostViewModel(post);
+    }
+    const userId = this.user._id;
+    const isUserLikedBefore = post.likingUsers.find(user => user.userId.toString() === userId.toString());
+    if (!isUserLikedBefore) {
+        return mapperToPostViewModel(post);
+    }
+    const myStatus = isUserLikedBefore.myStatus;
+    return mapperToPostViewModel(post, myStatus);
+}
+function mapperToPostViewModel(post, myStatus) {
+    const filter = { myStatus: "None" };
+    if (myStatus) {
+        filter.myStatus = myStatus;
+    }
     return {
         id: post._id.toString(),
         title: post.title,
@@ -20,11 +48,17 @@ function postsMapperToPostType(post) {
         content: post.content,
         blogId: post.blogId,
         blogName: post.blogName,
-        createdAt: post.createdAt
+        createdAt: post.createdAt,
+        extendedLikesInfo: {
+            likesCount: post.extendedLikesInfo.likesCount,
+            dislikesCount: post.extendedLikesInfo.dislikesCount,
+            myStatus: "None",
+            newestLikes: post.likes.slice(-3)
+        }
     };
 }
 class PostsQueryRepository {
-    getAllPosts(query, blogId) {
+    getAllPosts(query, blogId, user) {
         return __awaiter(this, void 0, void 0, function* () {
             const { sortDirection = "desc", sortBy = "createdAt", pageNumber = 1, pageSize = 10 } = query;
             const sortDirectionNumber = sortDirection === "desc" ? -1 : 1;
@@ -40,7 +74,7 @@ class PostsQueryRepository {
                 .skip(skippedPostsNumber)
                 .limit(+pageSize)
                 .lean();
-            const postsView = postsDb.map(postsMapperToPostType);
+            const postsView = postsDb.map(mapPostsToViewModel, { user: user });
             return {
                 pagesCount: Math.ceil(countAll / +pageSize),
                 page: +pageNumber,
@@ -50,14 +84,14 @@ class PostsQueryRepository {
             };
         });
     }
-    findPostById(postId) {
+    findPostById(postId, user) {
         return __awaiter(this, void 0, void 0, function* () {
             let _id = new mongodb_1.ObjectId(postId);
             let foundPost = yield db_1.PostModelClass.findOne({ _id: _id });
             if (!foundPost) {
                 return null;
             }
-            return postsMapperToPostType(foundPost);
+            return mapPostToViewModel(foundPost, user);
         });
     }
 }
