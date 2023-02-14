@@ -96,7 +96,7 @@ class PostsService {
                         --postInstance.extendedLikesInfo.likesCount;
                         ++postInstance.extendedLikesInfo.dislikesCount;
                         postInstance.likingUsers[indexOfUser].myStatus = "Dislike";
-                        postInstance.likes.filter(user => user.userId !== userId.toString());
+                        postInstance.likes = postInstance.likes.filter(like => like.userId !== userId.toString());
                     }
                     if (myStatus === "None") {
                         ++postInstance.extendedLikesInfo.dislikesCount;
@@ -110,7 +110,7 @@ class PostsService {
                     if (myStatus === "Like") {
                         --postInstance.extendedLikesInfo.likesCount;
                         postInstance.likingUsers[indexOfUser].myStatus = "None";
-                        postInstance.likes.filter(user => user.userId !== userId.toString());
+                        postInstance.likes = postInstance.likes.filter(like => like.userId !== userId.toString());
                     }
                     if (myStatus === "Dislike") {
                         --postInstance.extendedLikesInfo.dislikesCount;
